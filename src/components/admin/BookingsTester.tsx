@@ -339,7 +339,7 @@ export default function BookingsTester() {
             </label>
             <select
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as typeof formData.status })}
               className="form-select"
             >
               <option value="pending">Pending</option>
@@ -354,7 +354,7 @@ export default function BookingsTester() {
             </label>
             <select
               value={formData.paymentStatus}
-              onChange={(e) => setFormData({ ...formData, paymentStatus: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, paymentStatus: e.target.value as typeof formData.paymentStatus })}
               className="form-select"
             >
               <option value="unpaid">Unpaid</option>

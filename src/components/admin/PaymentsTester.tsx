@@ -196,7 +196,7 @@ export default function PaymentsTester() {
             </label>
             <select
               value={formData.gateway}
-              onChange={(e) => setFormData({ ...formData, gateway: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, gateway: e.target.value as typeof formData.gateway })}
               className="form-select"
             >
               <option value="payfast">PayFast</option>
@@ -224,7 +224,7 @@ export default function PaymentsTester() {
             </label>
             <select
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as typeof formData.status })}
               className="form-select"
             >
               <option value="pending">Pending</option>
