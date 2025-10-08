@@ -9,7 +9,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     const body = await request.json();
     const updated = await Service.findByIdAndUpdate(id, body, { new: true, runValidators: true });
     if (!updated) return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
-    return NextResponse.json({ success: true, data: updated }, { status: 200 });
+    return NextResponse.json(updated, { status: 200 });
   } catch (error) {
     console.error('[PUT /api/services] Error:', error);
     return NextResponse.json({ success: false, message: 'Failed to update service' }, { status: 500 });

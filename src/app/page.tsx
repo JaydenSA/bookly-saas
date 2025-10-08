@@ -1,8 +1,43 @@
+'use client';
+
 import Image from "next/image";
+import { useKindeAuth } from '@kinde-oss/kinde-auth-nextjs';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Home() {
+  const { user, isAuthenticated, isLoading } = useKindeAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading) return;
+    
+    if (isAuthenticated && user) {
+      // User is authenticated, redirect to welcome page for account setup
+      router.push('/welcome');
+    }
+  }, [isAuthenticated, user, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+            <CardTitle>Loading...</CardTitle>
+            <CardDescription>
+              Please wait while we verify your authentication.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
+    <div className="min-h-screen bg-gray-50">
+      <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <Image
           className="dark:invert"
@@ -98,6 +133,7 @@ export default function Home() {
           Go to nextjs.org →
         </a>
       </footer>
+      </div>
     </div>
   );
 }

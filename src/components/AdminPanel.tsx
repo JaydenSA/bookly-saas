@@ -5,18 +5,14 @@ import UsersTester from './admin/UsersTester';
 import BusinessesTester from './admin/BusinessesTester';
 import ServicesTester from './admin/ServicesTester';
 import BookingsTester from './admin/BookingsTester';
-import PaymentsTester from './admin/PaymentsTester';
-import TestDocsTester from './admin/TestDocsTester';
 
 interface AdminPanelProps {
   connected: boolean;
   pingOk: boolean;
-  testDocCount: number | null;
   userCount: number | null;
   businessCount: number | null;
   serviceCount: number | null;
   bookingCount: number | null;
-  paymentCount: number | null;
   errorMessage: string | null;
 }
 
@@ -85,12 +81,10 @@ const TestIcon = () => (
 export default function AdminPanel({
   connected,
   pingOk,
-  testDocCount,
   userCount,
   businessCount,
   serviceCount,
   bookingCount,
-  paymentCount,
   errorMessage,
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -133,20 +127,6 @@ export default function AdminPanel({
       icon: BookingIcon,
       bgColor: 'bg-orange-50',
       iconColor: 'text-orange-600'
-    },
-    { 
-      label: 'Payments', 
-      value: paymentCount ?? 0, 
-      icon: PaymentIcon,
-      bgColor: 'bg-rose-50',
-      iconColor: 'text-rose-600'
-    },
-    { 
-      label: 'Test Docs', 
-      value: testDocCount ?? 0, 
-      icon: TestIcon,
-      bgColor: 'bg-slate-50',
-      iconColor: 'text-slate-600'
     },
   ];
 
@@ -320,8 +300,6 @@ export default function AdminPanel({
           {activeTab === 'businesses' && <div className="table-container"><BusinessesTester /></div>}
           {activeTab === 'services' && <div className="table-container"><ServicesTester /></div>}
           {activeTab === 'bookings' && <div className="table-container"><BookingsTester /></div>}
-          {activeTab === 'payments' && <div className="table-container"><PaymentsTester /></div>}
-          {activeTab === 'testdocs' && <div className="table-container"><TestDocsTester /></div>}
         </div>
       </div>
     </div>

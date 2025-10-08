@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { LoginLink, RegisterLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { useKindeAuth } from "@kinde-oss/kinde-auth-nextjs";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
   const { user, isAuthenticated, isLoading } = useKindeAuth();
@@ -25,30 +29,43 @@ export default function Navbar() {
 
         {/* Right actions */}
         {isLoading ? (
-          <div className="inline-flex items-center text-sm text-gray-500">Loading...</div>
+          <div className="inline-flex items-center text-sm text-muted-foreground">Loading...</div>
         ) : isAuthenticated && user ? (
           <div className="flex items-center gap-3">
-            <div className="flex items-center">
-              <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold">
-                {user.given_name?.[0] || user.family_name?.[0] || user.email?.[0] || "U"}
-              </div>
-              <div className="ml-3 hidden sm:block">
-                <div className="text-sm font-medium text-gray-900">{user.given_name || user.email}</div>
-                <div className="text-xs text-gray-500">{user.email}</div>
+            <div className="flex items-center gap-3">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {user.given_name?.[0] || user.family_name?.[0] || user.email?.[0] || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="hidden sm:block">
+                <div className="text-sm font-medium">{user.given_name || user.email}</div>
+                <div className="text-xs text-muted-foreground">{user.email}</div>
               </div>
             </div>
-            <LogoutLink className="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0">
-              Log out
-            </LogoutLink>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <LogoutLink className="w-full cursor-pointer">
+                    Log out
+                  </LogoutLink>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <LoginLink className="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0">
-              Sign in
-            </LoginLink>
-            <RegisterLink className="inline-flex items-center bg-indigo-600 text-white border-0 py-1 px-3 focus:outline-none hover:bg-indigo-700 rounded text-base mt-4 md:mt-0">
-              Sign up
-            </RegisterLink>
+            <Button variant="ghost" asChild>
+              <LoginLink postLoginRedirectURL="/dashboard">Sign in</LoginLink>
+            </Button>
+            <Button asChild>
+              <RegisterLink postLoginRedirectURL="/welcome">Sign up</RegisterLink>
+            </Button>
           </div>
         )}
       </div>

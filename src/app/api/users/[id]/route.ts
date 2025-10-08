@@ -9,7 +9,21 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     const body = await request.json();
     const updated = await User.findByIdAndUpdate(id, body, { new: true, runValidators: true });
     if (!updated) return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
-    return NextResponse.json({ success: true, data: updated }, { status: 200 });
+    
+    return NextResponse.json({ 
+      success: true, 
+      user: {
+        id: updated._id,
+        kindeUserId: updated.kindeUserId,
+        name: updated.name,
+        email: updated.email,
+        role: updated.role,
+        plan: updated.plan,
+        businessId: updated.businessId,
+        phone: updated.phone,
+        createdAt: updated.createdAt,
+      }
+    }, { status: 200 });
   } catch (error) {
     console.error('[PUT /api/users] Error:', error);
     return NextResponse.json({ success: false, message: 'Failed to update user' }, { status: 500 });
