@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AddressInput from '@/components/ui/address-input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSnackbar } from '@/hooks/useSnackbar';
 
 interface Business {
@@ -20,6 +21,7 @@ interface Business {
   address?: string;
   description?: string;
   logoUrl?: string;
+  category: string;
   timezone?: string;
   depositPercentage: number;
   ownerId: string;
@@ -40,6 +42,7 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
     name: '',
     address: '',
     description: '',
+    category: '',
     timezone: 'Africa/Johannesburg',
     depositPercentage: 0,
   });
@@ -58,6 +61,7 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
             name: data.businesses[0].name,
             address: data.businesses[0].address || '',
             description: data.businesses[0].description || '',
+            category: data.businesses[0].category || '',
             timezone: data.businesses[0].timezone || 'Africa/Johannesburg',
             depositPercentage: data.businesses[0].depositPercentage || 0,
           });
@@ -186,6 +190,7 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
         name: business.name,
         address: business.address || '',
         description: business.description || '',
+        category: business.category || '',
         timezone: business.timezone || 'Africa/Johannesburg',
         depositPercentage: business.depositPercentage,
       });
@@ -194,6 +199,7 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
         name: '',
         address: '',
         description: '',
+        category: '',
         timezone: 'Africa/Johannesburg',
         depositPercentage: 0,
       });
@@ -383,6 +389,7 @@ interface BusinessFormProps {
     name: string;
     address: string;
     description: string;
+    category: string;
     timezone: string;
     depositPercentage: number;
   };
@@ -390,6 +397,7 @@ interface BusinessFormProps {
     name: string;
     address: string;
     description: string;
+    category: string;
     timezone: string;
     depositPercentage: number;
   }) => void;
@@ -429,6 +437,28 @@ function BusinessForm({ formData, setFormData, onSubmit, isLoading, submitText }
           placeholder="Describe your business"
           rows={3}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="category">Category *</Label>
+        <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Beauty & Wellness">Beauty & Wellness</SelectItem>
+            <SelectItem value="Health & Medical">Health & Medical</SelectItem>
+            <SelectItem value="Fitness & Sports">Fitness & Sports</SelectItem>
+            <SelectItem value="Education & Training">Education & Training</SelectItem>
+            <SelectItem value="Professional Services">Professional Services</SelectItem>
+            <SelectItem value="Food & Beverage">Food & Beverage</SelectItem>
+            <SelectItem value="Automotive">Automotive</SelectItem>
+            <SelectItem value="Home & Garden">Home & Garden</SelectItem>
+            <SelectItem value="Technology">Technology</SelectItem>
+            <SelectItem value="Entertainment">Entertainment</SelectItem>
+            <SelectItem value="Other">Other</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

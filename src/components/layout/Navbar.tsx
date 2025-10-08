@@ -21,10 +21,9 @@ export default function Navbar() {
           <span className="ml-3 text-xl">Tailblocks</span>
         </Link>
         <nav className="md:mr-auto md:ml-4 md:py-1 md:pl-4 md:border-l md:border-gray-200 flex flex-wrap items-center text-base justify-center">
-          <Link href="#" className="mr-5 hover:text-gray-900">First Link</Link>
-          <Link href="#" className="mr-5 hover:text-gray-900">Second Link</Link>
-          <Link href="#" className="mr-5 hover:text-gray-900">Third Link</Link>
-          <Link href="#" className="mr-5 hover:text-gray-900">Fourth Link</Link>
+          <Link href="/discover" className="mr-5 hover:text-gray-900">Discover</Link>
+          <Link href="/dashboard" className="mr-5 hover:text-gray-900">Dashboard</Link>
+          <Link href="/admin" className="mr-5 hover:text-gray-900">Admin</Link>
         </nav>
 
         {/* Right actions */}

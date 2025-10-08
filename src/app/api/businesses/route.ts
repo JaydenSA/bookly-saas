@@ -8,14 +8,57 @@ export async function GET(request: NextRequest) {
     
     const { searchParams } = new URL(request.url);
     const ownerId = searchParams.get('ownerId');
+    const search = searchParams.get('search');
+    const category = searchParams.get('category');
+    const sortBy = searchParams.get('sortBy') || 'newest';
     
     let query = {};
+    
+    // Filter by owner if specified
     if (ownerId) {
       query = { ownerId };
     }
     
-    const docs = await Business.find(query).sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, businesses: docs }, { status: 200 });
+    // Add search functionality
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      query = {
+        ...query,
+        $or: [
+          { name: searchRegex },
+          { description: searchRegex },
+          { address: searchRegex },
+          { category: searchRegex }
+        ]
+      };
+    }
+    
+    // Filter by category
+    if (category && category !== 'all') {
+      query = { ...query, category };
+    }
+    
+    // Sort options
+    let sortOptions = {};
+    switch (sortBy) {
+      case 'newest':
+        sortOptions = { createdAt: -1 };
+        break;
+      case 'oldest':
+        sortOptions = { createdAt: 1 };
+        break;
+      case 'name-asc':
+        sortOptions = { name: 1 };
+        break;
+      case 'name-desc':
+        sortOptions = { name: -1 };
+        break;
+      default:
+        sortOptions = { createdAt: -1 };
+    }
+    
+    const docs = await Business.find(query).sort(sortOptions);
+    return NextResponse.json({ businesses: docs }, { status: 200 });
   } catch (error) {
     console.error('[GET /api/businesses] Error:', error);
     return NextResponse.json({ success: false, message: 'Failed to fetch businesses' }, { status: 500 });

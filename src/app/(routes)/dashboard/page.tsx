@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import BusinessSection from '@/components/dashboard/BusinessSection';
 import ServicesSection from '@/components/dashboard/ServicesSection';
-import BookingsSection from '@/components/dashboard/BookingsSection';
 import { useSnackbar } from '@/hooks/useSnackbar';
 
 interface UserData {
@@ -281,11 +280,6 @@ export default function DashboardPage() {
         {/* Services Section - Only show if user has a business */}
         {userData.businessId && (
           <ServicesSection businessId={userData.businessId} />
-        )}
-
-        {/* Bookings Section - Only show if user has a business */}
-        {userData.businessId && (
-          <BookingsSection businessId={userData.businessId} />
         )}
 
         {/* Quick Actions */}

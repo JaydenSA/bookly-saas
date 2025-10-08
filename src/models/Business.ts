@@ -16,6 +16,7 @@ const BusinessSchema = new Schema({
   address: { type: String },
   description: { type: String },
   logoUrl: { type: String },
+  category: { type: String, required: true, index: true },
   workingHours: { type: WorkingHoursSchema, default: () => ({}) },
   timezone: { type: String },
   depositPercentage: { type: Number, default: 0 },
