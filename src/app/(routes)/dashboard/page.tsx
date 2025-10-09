@@ -12,18 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import BusinessSection from '@/components/dashboard/BusinessSection';
 import ServicesSection from '@/components/dashboard/ServicesSection';
 import { useSnackbar } from '@/hooks/useSnackbar';
-
-interface UserData {
-  id: string;
-  kindeUserId: string;
-  name: string;
-  email: string;
-  role: 'owner' | 'staff';
-  plan: 'free' | 'pro' | 'enterprise';
-  businessId?: string;
-  phone?: string;
-  createdAt: string;
-}
+import { UserData } from '@/types';
 
 export default function DashboardPage() {
   const { user: kindeUser, isAuthenticated, isLoading } = useKindeAuth();
@@ -146,12 +135,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="dashboard-layout">
+      <div className="general-container py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">Welcome back, {userData.name}!</p>
+          <h1 className="dashboard-title">Dashboard</h1>
+          <p className="dashboard-subtitle">Welcome back, {userData.name}!</p>
         </div>
 
         {/* User Info Card */}

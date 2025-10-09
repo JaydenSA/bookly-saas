@@ -16,6 +16,7 @@ const BusinessSchema = new Schema({
   address: { type: String },
   description: { type: String },
   logoUrl: { type: String },
+  images: [{ type: String }], // Array of image URLs
   category: { type: String, required: true, index: true },
   workingHours: { type: WorkingHoursSchema, default: () => ({}) },
   timezone: { type: String },

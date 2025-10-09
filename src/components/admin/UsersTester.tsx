@@ -1,17 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-
-type User = {
-  _id: string;
-  kindeUserId: string;
-  name: string;
-  email: string;
-  role: 'owner' | 'staff';
-  businessId?: string;
-  phone?: string;
-  createdAt: string;
-};
+import { User } from '@/types';
 
 export default function UsersTester() {
   const [users, setUsers] = useState<User[]>([]);
@@ -158,7 +148,7 @@ export default function UsersTester() {
       {/* Form */}
       <div className="form-container">
         <h3 className="form-title">
-          <svg className="form-title-icon icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="form-title-icon general-icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
           {isEditing ? 'Edit User' : 'Create New User'}
@@ -293,7 +283,7 @@ export default function UsersTester() {
       <div className="table-container">
         <div className="table-header">
           <h3 className="admin-card-title">
-            <svg className="admin-card-title-icon icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="admin-card-title-icon general-icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
             </svg>
             Users ({users.length})
@@ -347,10 +337,10 @@ export default function UsersTester() {
                       {user.role}
                     </span>
                   </td>
-                  <td className="table-cell-sm text-secondary font-medium">
+                  <td className="table-cell-sm general-text-secondary font-medium">
                     {user.businessId || '-'}
                   </td>
-                  <td className="table-cell-sm text-secondary font-medium">
+                  <td className="table-cell-sm general-text-secondary font-medium">
                     {user.phone || '-'}
                   </td>
                   <td className="table-cell-sm text-tertiary">

@@ -4,15 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { MapPin, ExternalLink } from 'lucide-react';
-
-interface AddressInputProps {
-  value: string;
-  onChange: (address: string) => void;
-  placeholder?: string;
-  label?: string;
-  required?: boolean;
-  id?: string;
-}
+import { AddressInputProps } from '@/types';
 
 export default function AddressInput({
   value,

@@ -10,22 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useSnackbar } from '@/hooks/useSnackbar';
-
-interface Service {
-  _id: string;
-  name: string;
-  description?: string;
-  duration: number; // in minutes
-  price: number;
-  businessId: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface ServicesSectionProps {
-  businessId: string;
-}
+import { Service, ServicesSectionProps } from '@/types';
 
 export default function ServicesSection({ businessId }: ServicesSectionProps) {
   const [services, setServices] = useState<Service[]>([]);

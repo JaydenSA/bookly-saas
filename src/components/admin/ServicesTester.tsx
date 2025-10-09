@@ -1,18 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-
-type Service = {
-  _id: string;
-  businessId: string;
-  name: string;
-  description?: string;
-  price: number;
-  duration: number;
-  depositRequired: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
+import { Service } from '@/types';
 
 export default function ServicesTester() {
   const [services, setServices] = useState<Service[]>([]);
@@ -159,7 +148,7 @@ export default function ServicesTester() {
       {/* Form */}
       <div className="form-container">
         <h3 className="form-title">
-          <svg className="form-title-icon icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="form-title-icon general-icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
           {isEditing ? 'Edit Service' : 'Create New Service'}
@@ -287,7 +276,7 @@ export default function ServicesTester() {
       <div className="table-container">
         <div className="table-header">
           <h3 className="admin-card-title">
-            <svg className="admin-card-title-icon icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="admin-card-title-icon general-icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             Services ({services.length})
@@ -329,13 +318,13 @@ export default function ServicesTester() {
                       <div className="table-user-meta">{service.description || 'No description'}</div>
                     </div>
                   </td>
-                  <td className="table-cell-sm text-secondary font-medium">
+                  <td className="table-cell-sm general-text-secondary font-medium">
                     {service.businessId}
                   </td>
-                  <td className="table-cell-sm text-secondary font-medium">
+                  <td className="table-cell-sm general-text-secondary font-medium">
                     R{service.price.toFixed(2)}
                   </td>
-                  <td className="table-cell-sm text-secondary font-medium">
+                  <td className="table-cell-sm general-text-secondary font-medium">
                     {service.duration} min
                   </td>
                   <td className="table-cell-sm">

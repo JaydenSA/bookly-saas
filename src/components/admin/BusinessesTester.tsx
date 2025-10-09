@@ -1,33 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-
-type WorkingHours = {
-  mon: string[];
-  tue: string[];
-  wed: string[];
-  thu: string[];
-  fri: string[];
-  sat: string[];
-  sun: string[];
-};
-
-type Business = {
-  _id: string;
-  name: string;
-  slug: string;
-  address?: string;
-  description?: string;
-  logoUrl?: string;
-  workingHours: WorkingHours;
-  timezone?: string;
-  depositPercentage: number;
-  ownerId?: string;
-  payfastMerchantId?: string;
-  ozowApiKey?: string;
-  createdAt: string;
-  updatedAt: string;
-};
+import { Business, WorkingHours } from '@/types';
 
 export default function BusinessesTester() {
   const [businesses, setBusinesses] = useState<Business[]>([]);

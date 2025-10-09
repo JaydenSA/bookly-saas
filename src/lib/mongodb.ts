@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { MongooseCache } from '@/types';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const SAMPLE_MFLIX_URI = process.env.SAMPLE_MFLIX_URI;
@@ -8,13 +9,6 @@ if (!MONGODB_URI) {
   // console.log('MONGODB_URI is defined:', MONGODB_URI.substring(0, 20) + '...');
   console.log('MONGODB_URI is defined:', MONGODB_URI);
 }
-
-type MongooseCache = {
-  conn: typeof mongoose | null;
-  promise: Promise<typeof mongoose> | null;
-  sampleConn: mongoose.Connection | null;
-  samplePromise: Promise<mongoose.Connection> | null;
-};
 
 declare global {
   var mongoose: MongooseCache | undefined;

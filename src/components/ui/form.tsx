@@ -3,6 +3,7 @@
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
+import { FormItemContextValue } from '@/types';
 import {
   Controller,
   FormProvider,
@@ -63,10 +64,6 @@ const useFormField = () => {
     formMessageId: `${id}-form-item-message`,
     ...fieldState,
   }
-}
-
-type FormItemContextValue = {
-  id: string
 }
 
 const FormItemContext = React.createContext<FormItemContextValue>(

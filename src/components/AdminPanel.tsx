@@ -5,61 +5,45 @@ import UsersTester from './admin/UsersTester';
 import BusinessesTester from './admin/BusinessesTester';
 import ServicesTester from './admin/ServicesTester';
 import BookingsTester from './admin/BookingsTester';
-
-interface AdminPanelProps {
-  connected: boolean;
-  pingOk: boolean;
-  userCount: number | null;
-  businessCount: number | null;
-  serviceCount: number | null;
-  bookingCount: number | null;
-  errorMessage: string | null;
-}
-
-type TabType = 'dashboard' | 'users' | 'businesses' | 'services' | 'bookings' | 'payments' | 'testdocs';
+import { AdminPanelProps, TabType } from '@/types';
 
 const DashboardIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="general-icon-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
   </svg>
 );
 
 const UsersIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="general-icon-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
   </svg>
 );
 
 const BusinessIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="general-icon-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
   </svg>
 );
 
 const ServiceIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="general-icon-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
   </svg>
 );
 
 const BookingIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="general-icon-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
   </svg>
 );
 
 const PaymentIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="general-icon-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
   </svg>
 );
 
-const TestIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-  </svg>
-);
 
   const StatusIndicator = ({ connected, pingOk }: { connected: boolean; pingOk: boolean }) => (
     <div className="status-indicator">
@@ -96,7 +80,6 @@ export default function AdminPanel({
     { id: 'services', label: 'Services', icon: ServiceIcon },
     { id: 'bookings', label: 'Bookings', icon: BookingIcon },
     { id: 'payments', label: 'Payments', icon: PaymentIcon },
-    { id: 'testdocs', label: 'Test Docs', icon: TestIcon },
   ];
 
   const stats = [
@@ -104,29 +87,25 @@ export default function AdminPanel({
       label: 'Users', 
       value: userCount ?? 0, 
       icon: UsersIcon,
-      bgColor: 'bg-blue-50',
-      iconColor: 'text-blue-600'
+      bgColor: 'stat-icon-bg-blue'
     },
     { 
       label: 'Businesses', 
       value: businessCount ?? 0, 
       icon: BusinessIcon,
-      bgColor: 'bg-emerald-50',
-      iconColor: 'text-emerald-600'
+      bgColor: 'stat-icon-bg-green'
     },
     { 
       label: 'Services', 
       value: serviceCount ?? 0, 
       icon: ServiceIcon,
-      bgColor: 'bg-purple-50',
-      iconColor: 'text-purple-600'
+      bgColor: 'stat-icon-bg-purple'
     },
     { 
       label: 'Bookings', 
       value: bookingCount ?? 0, 
       icon: BookingIcon,
-      bgColor: 'bg-orange-50',
-      iconColor: 'text-orange-600'
+      bgColor: 'stat-icon-bg-orange'
     },
   ];
 
@@ -134,10 +113,10 @@ export default function AdminPanel({
     <div className="admin-layout">
       {/* Clean Header */}
       <div className="admin-header">
-        <div className="admin-container">
+        <div className="general-container">
           <div className="admin-header-content">
             <div>
-              <h1 className="admin-title">Admin Dashboard</h1>
+              <h1 className="dashboard-title">Admin Dashboard</h1>
               <p className="admin-subtitle">Booking System Management Portal</p>
             </div>
             <StatusIndicator connected={connected} pingOk={pingOk} />
@@ -147,7 +126,7 @@ export default function AdminPanel({
 
       {/* Clean Navigation */}
       <div className="admin-nav">
-        <div className="admin-container">
+        <div className="general-container">
           <nav className="admin-nav-content">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -171,7 +150,7 @@ export default function AdminPanel({
       </div>
 
       {/* Main Content */}
-      <div className="admin-container py-12">
+      <div className="general-container py-12">
         {errorMessage && (
           <div className="alert-error">
             <div className="alert-error-content">
@@ -196,10 +175,10 @@ export default function AdminPanel({
             <div className="dashboard-card">
               <div className="dashboard-welcome">
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-3">Welcome to your Dashboard</h2>
-                  <p className="text-gray-600 text-lg">Monitor your booking system performance and manage your business operations.</p>
+                  <h2 className="dashboard-title">Welcome to your Dashboard</h2>
+                  <p className="dashboard-subtitle">Monitor your booking system performance and manage your business operations.</p>
                 </div>
-                <div className="hidden lg:block">
+                <div className="general-hidden-lg">
                   <div className="dashboard-welcome-icon">
                     <svg className="dashboard-welcome-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -210,15 +189,15 @@ export default function AdminPanel({
             </div>
             
             {/* Database Status Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="admin-dashboard-grid">
               <div className="dashboard-card">
-                <h3 className="text-xl font-bold text-gray-900 mb-8 flex items-center">
-                  <svg className="icon-lg icon-primary mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h3 className="card-title">
+                  <svg className="general-icon-lg general-icon-primary mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
                   </svg>
                   Database Status
                 </h3>
-                <div className="space-y-6">
+                <div className="general-space-y-6">
                   <div className="db-status-item">
                     <span className="db-status-label">MongoDB Connection</span>
                     <div className="db-status-value">
@@ -241,8 +220,8 @@ export default function AdminPanel({
               </div>
 
               <div className="dashboard-card">
-                <h3 className="text-xl font-bold text-gray-900 mb-8 flex items-center">
-                  <svg className="icon-lg icon-success mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h3 className="card-title">
+                  <svg className="general-icon-lg general-icon-success mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                   Quick Actions
@@ -300,6 +279,23 @@ export default function AdminPanel({
           {activeTab === 'businesses' && <div className="table-container"><BusinessesTester /></div>}
           {activeTab === 'services' && <div className="table-container"><ServicesTester /></div>}
           {activeTab === 'bookings' && <div className="table-container"><BookingsTester /></div>}
+          {activeTab === 'payments' && (
+            <div className="table-container">
+              <div className="admin-card">
+                <div className="admin-card-header">
+                  <h3 className="admin-card-title">
+                    <svg className="admin-card-title-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    Payments
+                  </h3>
+                </div>
+                <div className="admin-card-padding">
+                  <p className="general-text-secondary">Payment management functionality coming soon.</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

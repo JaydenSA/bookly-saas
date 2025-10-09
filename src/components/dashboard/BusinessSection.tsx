@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Building, Plus, Edit2, MapPin, Clock, Globe } from 'lucide-react';
+import { Building, Plus, Edit2, MapPin, Clock, Globe, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,26 +12,9 @@ import AddressInput from '@/components/ui/address-input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ImageUpload from '@/components/ui/image-upload';
 import { useSnackbar } from '@/hooks/useSnackbar';
-
-interface Business {
-  _id: string;
-  name: string;
-  slug: string;
-  address?: string;
-  description?: string;
-  logoUrl?: string;
-  category: string;
-  timezone?: string;
-  depositPercentage: number;
-  ownerId: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface BusinessSectionProps {
-  userId: string;
-}
+import { Business, BusinessSectionProps, BusinessFormProps } from '@/types';
 
 export default function BusinessSection({ userId }: BusinessSectionProps) {
   const [business, setBusiness] = useState<Business | null>(null);
@@ -46,6 +29,8 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
     timezone: 'Africa/Johannesburg',
     depositPercentage: 0,
   });
+  const [images, setImages] = useState<string[]>([]);
+  const [logoUrl, setLogoUrl] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const { showSuccess, showError, showLoading, dismiss } = useSnackbar();
 
@@ -65,6 +50,8 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
             timezone: data.businesses[0].timezone || 'Africa/Johannesburg',
             depositPercentage: data.businesses[0].depositPercentage || 0,
           });
+          setImages(data.businesses[0].images || []);
+          setLogoUrl(data.businesses[0].logoUrl || '');
         } else {
           setBusiness(null);
         }
@@ -100,6 +87,8 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
         ...formData,
         slug: formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
         ownerId: userId,
+        logoUrl: logoUrl,
+        images: images,
       };
 
       const response = await fetch('/api/businesses', {
@@ -158,7 +147,11 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          logoUrl: logoUrl,
+          images: images,
+        }),
       });
 
       if (!response.ok) {
@@ -194,6 +187,8 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
         timezone: business.timezone || 'Africa/Johannesburg',
         depositPercentage: business.depositPercentage,
       });
+      setImages(business.images || []);
+      setLogoUrl(business.logoUrl || '');
     } else {
       setFormData({
         name: '',
@@ -202,6 +197,53 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
         category: '',
         timezone: 'Africa/Johannesburg',
         depositPercentage: 0,
+      });
+      setImages([]);
+      setLogoUrl('');
+    }
+  };
+
+  const clearGalleryImages = async () => {
+    if (!business || images.length === 0) return;
+
+    const loadingToast = showLoading('Clearing gallery images...', {
+      description: 'Removing images from server and database',
+    });
+
+    try {
+      // Update the database to remove gallery images
+      const response = await fetch(`/api/businesses/${business._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          logoUrl: logoUrl,
+          images: [], // Clear the gallery images
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to clear gallery images from database');
+      }
+
+      // Update local state
+      setImages([]);
+      
+      // Update the business state
+      const updatedBusiness = await response.json();
+      setBusiness(updatedBusiness.business);
+
+      dismiss(loadingToast);
+      showSuccess('Gallery images cleared successfully!', {
+        description: 'All gallery images have been removed',
+      });
+    } catch (err) {
+      console.error('Error clearing gallery images:', err);
+      dismiss(loadingToast);
+      showError('Failed to clear gallery images', {
+        description: err instanceof Error ? err.message : 'Please try again',
       });
     }
   };
@@ -241,20 +283,25 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
                   Edit
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Edit Business</DialogTitle>
                   <DialogDescription>
                     Update your business information.
                   </DialogDescription>
                 </DialogHeader>
-                <BusinessForm
-                  formData={formData}
-                  setFormData={setFormData}
-                  onSubmit={handleUpdateBusiness}
-                  isLoading={isEditing}
-                  submitText="Update Business"
-                />
+          <BusinessForm
+            formData={formData}
+            setFormData={setFormData}
+            images={images}
+            setImages={setImages}
+            logoUrl={logoUrl}
+            setLogoUrl={setLogoUrl}
+            onClearGallery={clearGalleryImages}
+            onSubmit={handleUpdateBusiness}
+            isLoading={isEditing}
+            submitText="Update Business"
+          />
               </DialogContent>
             </Dialog>
           )}
@@ -277,15 +324,15 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
                 <h3 className="text-lg font-semibold">{business.name}</h3>
                 <Badge variant="secondary">Active</Badge>
               </div>
-              {business.logoUrl && (
-                <Image
-                  src={business.logoUrl}
-                  alt={`${business.name} logo`}
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 rounded-lg object-cover"
-                />
-              )}
+               {business.logoUrl && (
+                 <Image
+                   src={business.logoUrl}
+                   alt={`${business.name} logo`}
+                   width={80}
+                   height={80}
+                   className="h-20 w-20 rounded-xl object-contain shadow-lg border-2 border-gray-200 dark:border-gray-700"
+                 />
+               )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -361,20 +408,25 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
                   Create Business Account
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Create Business Account</DialogTitle>
                   <DialogDescription>
                     Set up your business profile to start accepting bookings.
                   </DialogDescription>
                 </DialogHeader>
-                <BusinessForm
-                  formData={formData}
-                  setFormData={setFormData}
-                  onSubmit={handleCreateBusiness}
-                  isLoading={isCreating}
-                  submitText="Create Business"
-                />
+          <BusinessForm
+            formData={formData}
+            setFormData={setFormData}
+            images={images}
+            setImages={setImages}
+            logoUrl={logoUrl}
+            setLogoUrl={setLogoUrl}
+            onClearGallery={clearGalleryImages}
+            onSubmit={handleCreateBusiness}
+            isLoading={isCreating}
+            submitText="Create Business"
+          />
               </DialogContent>
             </Dialog>
           </div>
@@ -384,109 +436,143 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
   );
 }
 
-interface BusinessFormProps {
-  formData: {
-    name: string;
-    address: string;
-    description: string;
-    category: string;
-    timezone: string;
-    depositPercentage: number;
-  };
-  setFormData: (data: {
-    name: string;
-    address: string;
-    description: string;
-    category: string;
-    timezone: string;
-    depositPercentage: number;
-  }) => void;
-  onSubmit: () => void;
-  isLoading: boolean;
-  submitText: string;
-}
 
-function BusinessForm({ formData, setFormData, onSubmit, isLoading, submitText }: BusinessFormProps) {
+function BusinessForm({ formData, setFormData, images, setImages, logoUrl, setLogoUrl, onClearGallery, onSubmit, isLoading, submitText }: BusinessFormProps) {
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Business Name *</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="Enter business name"
-          required
-        />
-      </div>
-
-      <AddressInput
-        value={formData.address}
-        onChange={(address) => setFormData({ ...formData, address })}
-        placeholder="Enter business address"
-        label="Address"
-        id="address"
-      />
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Describe your business"
-          rows={3}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="category">Category *</Label>
-        <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Beauty & Wellness">Beauty & Wellness</SelectItem>
-            <SelectItem value="Health & Medical">Health & Medical</SelectItem>
-            <SelectItem value="Fitness & Sports">Fitness & Sports</SelectItem>
-            <SelectItem value="Education & Training">Education & Training</SelectItem>
-            <SelectItem value="Professional Services">Professional Services</SelectItem>
-            <SelectItem value="Food & Beverage">Food & Beverage</SelectItem>
-            <SelectItem value="Automotive">Automotive</SelectItem>
-            <SelectItem value="Home & Garden">Home & Garden</SelectItem>
-            <SelectItem value="Technology">Technology</SelectItem>
-            <SelectItem value="Entertainment">Entertainment</SelectItem>
-            <SelectItem value="Other">Other</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="timezone">Timezone</Label>
-          <Input
-            id="timezone"
-            value={formData.timezone}
-            onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-            placeholder="Africa/Johannesburg"
-          />
+    <div className="space-y-6">
+      {/* Basic Information Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Business Name *</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Enter business name"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="category">Category *</Label>
+            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Beauty & Wellness">Beauty & Wellness</SelectItem>
+                <SelectItem value="Health & Medical">Health & Medical</SelectItem>
+                <SelectItem value="Fitness & Sports">Fitness & Sports</SelectItem>
+                <SelectItem value="Education & Training">Education & Training</SelectItem>
+                <SelectItem value="Professional Services">Professional Services</SelectItem>
+                <SelectItem value="Food & Beverage">Food & Beverage</SelectItem>
+                <SelectItem value="Automotive">Automotive</SelectItem>
+                <SelectItem value="Home & Garden">Home & Garden</SelectItem>
+                <SelectItem value="Technology">Technology</SelectItem>
+                <SelectItem value="Entertainment">Entertainment</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="depositPercentage">Deposit %</Label>
-          <Input
-            id="depositPercentage"
-            type="number"
-            min="0"
-            max="100"
-            value={formData.depositPercentage}
-            onChange={(e) => setFormData({ ...formData, depositPercentage: Number(e.target.value) })}
-            placeholder="0"
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            placeholder="Describe your business"
+            rows={3}
+          />
+        </div>
+
+        <AddressInput
+          value={formData.address}
+          onChange={(address) => setFormData({ ...formData, address })}
+          placeholder="Enter business address"
+          label="Address"
+          id="address"
+        />
+      </div>
+
+      {/* Business Settings Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Business Settings</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="timezone">Timezone</Label>
+            <Input
+              id="timezone"
+              value={formData.timezone}
+              onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+              placeholder="Africa/Johannesburg"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="depositPercentage">Deposit %</Label>
+            <Input
+              id="depositPercentage"
+              type="number"
+              min="0"
+              max="100"
+              value={formData.depositPercentage}
+              onChange={(e) => setFormData({ ...formData, depositPercentage: Number(e.target.value) })}
+              placeholder="0"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Logo Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Business Logo</h3>
+        <div className="space-y-2">
+          <Label>Logo Image</Label>
+          <ImageUpload
+            images={logoUrl ? [logoUrl] : []}
+            onImagesChange={(urls) => setLogoUrl(urls[0] || '')}
+            maxImages={1}
           />
         </div>
       </div>
 
-      <div className="flex justify-end space-x-2 pt-4">
+
+      {/* Gallery Images Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Gallery Images</h3>
+          {images.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClearGallery}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Clear All
+            </Button>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label>Additional Images (Max 5)</Label>
+          <ImageUpload
+            images={images}
+            onImagesChange={setImages}
+            maxImages={5}
+          />
+          {images.length > 0 && (
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {images.length} image{images.length !== 1 ? 's' : ''} uploaded
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200 dark:border-gray-700">
         <Button
           type="button"
           variant="outline"

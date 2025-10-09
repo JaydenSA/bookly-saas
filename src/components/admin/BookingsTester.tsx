@@ -1,28 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-
-type Client = {
-  name: string;
-  phone?: string;
-  email?: string;
-};
-
-type Booking = {
-  _id: string;
-  businessId: string;
-  client: Client;
-  serviceId: string;
-  staffId?: string;
-  date: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-  paymentStatus: 'unpaid' | 'deposit_paid' | 'paid' | 'refunded';
-  totalPrice: number;
-  depositAmount: number;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-};
+import { Client, Booking } from '@/types';
 
 export default function BookingsTester() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -207,7 +186,7 @@ export default function BookingsTester() {
       {/* Form */}
       <div className="form-container">
         <h3 className="form-title">
-          <svg className="form-title-icon icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="form-title-icon general-icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
           {isEditing ? 'Edit Booking' : 'Create New Booking'}
@@ -422,7 +401,7 @@ export default function BookingsTester() {
       <div className="table-container">
         <div className="table-header">
           <h3 className="admin-card-title">
-            <svg className="admin-card-title-icon icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="admin-card-title-icon general-icon-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             Bookings ({bookings.length})
@@ -468,18 +447,18 @@ export default function BookingsTester() {
                     <div className="text-sm text-primary">
                       {new Date(booking.date).toLocaleDateString()}
                     </div>
-                    <div className="text-sm text-secondary">
+                    <div className="text-sm general-text-secondary">
                       {new Date(booking.date).toLocaleTimeString()}
                     </div>
                   </td>
                   <td className="table-cell-sm">
                     <div className="text-sm text-primary">Service: {booking.serviceId}</div>
-                    <div className="text-sm text-secondary">Business: {booking.businessId}</div>
+                    <div className="text-sm general-text-secondary">Business: {booking.businessId}</div>
                   </td>
                   <td className="table-cell-sm">
                     <div className="text-sm text-primary">R{booking.totalPrice.toFixed(2)}</div>
                     {booking.depositAmount > 0 && (
-                      <div className="text-sm text-secondary">Deposit: R{booking.depositAmount.toFixed(2)}</div>
+                      <div className="text-sm general-text-secondary">Deposit: R{booking.depositAmount.toFixed(2)}</div>
                     )}
                   </td>
                   <td className="table-cell-sm">

@@ -10,12 +10,17 @@ export async function GET(request: NextRequest) {
     const ownerId = searchParams.get('ownerId');
     const search = searchParams.get('search');
     const category = searchParams.get('category');
+    const slug = searchParams.get('slug');
     const sortBy = searchParams.get('sortBy') || 'newest';
     
     let query = {};
     
+    // Filter by slug if specified (for individual business pages)
+    if (slug) {
+      query = { slug };
+    }
     // Filter by owner if specified
-    if (ownerId) {
+    else if (ownerId) {
       query = { ownerId };
     }
     

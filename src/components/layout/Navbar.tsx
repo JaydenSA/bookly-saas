@@ -12,34 +12,40 @@ export default function Navbar() {
   const { user, isAuthenticated, isLoading } = useKindeAuth();
 
   return (
-    <header className="text-gray-600 body-font bg-white border-b border-gray-200">
-      <div className="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
-        <Link href="/" className="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full" viewBox="0 0 24 24">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-          </svg>
-          <span className="ml-3 text-xl">Tailblocks</span>
+    <header className="navbar-layout">
+      <div className="navbar-container general-container">
+        <Link href="/" className="navbar-brand">
+          <div className="navbar-brand-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="navbar-brand-icon-svg" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <span className="navbar-brand-text">BookFlow</span>
         </Link>
-        <nav className="md:mr-auto md:ml-4 md:py-1 md:pl-4 md:border-l md:border-gray-200 flex flex-wrap items-center text-base justify-center">
-          <Link href="/discover" className="mr-5 hover:text-gray-900">Discover</Link>
-          <Link href="/dashboard" className="mr-5 hover:text-gray-900">Dashboard</Link>
-          <Link href="/admin" className="mr-5 hover:text-gray-900">Admin</Link>
+        <nav className="navbar-nav">
+          <a href="#features" className="navbar-nav-link">Features</a>
+          <a href="#pricing" className="navbar-nav-link">Pricing</a>
+          <a href="#testimonials" className="navbar-nav-link">Testimonials</a>
+          <Link href="/discover" className="navbar-nav-link">Discover</Link>
         </nav>
 
         {/* Right actions */}
         {isLoading ? (
-          <div className="inline-flex items-center text-sm text-muted-foreground">Loading...</div>
+          <div className="navbar-loading">Loading...</div>
         ) : isAuthenticated && user ? (
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-3">
+          <div className="navbar-actions">
+            <div className="navbar-user-info">
               <Avatar className="h-9 w-9">
                 <AvatarFallback className="bg-primary text-primary-foreground">
                   {user.given_name?.[0] || user.family_name?.[0] || user.email?.[0] || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div className="hidden sm:block">
-                <div className="text-sm font-medium">{user.given_name || user.email}</div>
-                <div className="text-xs text-muted-foreground">{user.email}</div>
+              <div className="navbar-user-details">
+                <div className="navbar-user-name">{user.given_name || user.email}</div>
+                <div className="navbar-user-email">{user.email}</div>
               </div>
             </div>
             <DropdownMenu>
@@ -58,7 +64,7 @@ export default function Navbar() {
             </DropdownMenu>
           </div>
         ) : (
-          <div className="flex items-center gap-3">
+          <div className="navbar-auth-actions">
             <Button variant="ghost" asChild>
               <LoginLink postLoginRedirectURL="/dashboard">Sign in</LoginLink>
             </Button>
