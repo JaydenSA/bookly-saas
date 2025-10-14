@@ -3,13 +3,37 @@
 import Link from "next/link";
 import { LoginLink, RegisterLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { useKindeAuth } from "@kinde-oss/kinde-auth-nextjs";
-import { LogOut } from "lucide-react";
+import { LogOut, Sun, Moon, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Navbar() {
   const { user, isAuthenticated, isLoading } = useKindeAuth();
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    if (theme === 'light') {
+      setTheme('dark');
+    } else if (theme === 'dark') {
+      setTheme('system');
+    } else {
+      setTheme('light');
+    }
+  };
+
+  const getThemeIcon = () => {
+    switch (theme) {
+      case 'light':
+        return <Sun className="h-4 w-4" />;
+      case 'dark':
+        return <Moon className="h-4 w-4" />;
+      default:
+        return <Monitor className="h-4 w-4" />;
+    }
+  };
 
   return (
     <header className="navbar-layout">
@@ -32,47 +56,61 @@ export default function Navbar() {
           <Link href="/discover" className="navbar-nav-link">Discover</Link>
         </nav>
 
-        {/* Right actions */}
-        {isLoading ? (
-          <div className="navbar-loading">Loading...</div>
-        ) : isAuthenticated && user ? (
-          <div className="navbar-actions">
-            <div className="navbar-user-info">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {user.given_name?.[0] || user.family_name?.[0] || user.email?.[0] || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="navbar-user-details">
-                <div className="navbar-user-name">{user.given_name || user.email}</div>
-                <div className="navbar-user-email">{user.email}</div>
+          {/* Right actions */}
+          {isLoading ? (
+            <div className="navbar-loading">Loading...</div>
+          ) : isAuthenticated && user ? (
+            <div className="navbar-actions">
+              <div className="navbar-user-info">
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {user.given_name?.[0] || user.family_name?.[0] || user.email?.[0] || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="navbar-user-details">
+                  <div className="navbar-user-name">{user.given_name || user.email}</div>
+                  <div className="navbar-user-email">{user.email}</div>
+                </div>
               </div>
+              
+              {/* Notification Bell */}
+              <NotificationBell />
+              
+              {/* Theme Toggle */}
+              <Button variant="ghost" size="icon" onClick={toggleTheme} title={`Current theme: ${theme}`}>
+                {getThemeIcon()}
+              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <LogoutLink className="w-full cursor-pointer">
+                      Log out
+                    </LogoutLink>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <LogoutLink className="w-full cursor-pointer">
-                    Log out
-                  </LogoutLink>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        ) : (
-          <div className="navbar-auth-actions">
-            <Button variant="ghost" asChild>
-              <LoginLink postLoginRedirectURL="/dashboard">Sign in</LoginLink>
-            </Button>
-            <Button asChild>
-              <RegisterLink postLoginRedirectURL="/welcome">Sign up</RegisterLink>
-            </Button>
-          </div>
-        )}
+          ) : (
+            <div className="navbar-auth-actions">
+              {/* Theme Toggle */}
+              <Button variant="ghost" size="icon" onClick={toggleTheme} title={`Current theme: ${theme}`}>
+                {getThemeIcon()}
+              </Button>
+              
+              <Button variant="ghost" asChild>
+                <LoginLink postLoginRedirectURL="/dashboard">Sign in</LoginLink>
+              </Button>
+              <Button asChild>
+                <RegisterLink postLoginRedirectURL="/welcome">Sign up</RegisterLink>
+              </Button>
+            </div>
+          )}
       </div>
     </header>
   );

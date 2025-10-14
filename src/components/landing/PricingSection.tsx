@@ -6,20 +6,39 @@ import { Badge } from '@/components/ui/badge';
 export default function PricingSection() {
   const plans = [
     {
+      name: 'Free',
+      price: '$0',
+      period: '/month',
+      description: 'Perfect for getting started',
+      features: [
+        'Up to 50 bookings/month',
+        'Basic calendar management',
+        'Email notifications',
+        'Customer database',
+        'Basic reporting'
+      ],
+      buttonText: 'Current Plan',
+      buttonVariant: 'outline' as const,
+      popular: false,
+      available: true
+    },
+    {
       name: 'Starter',
       price: '$29',
       period: '/month',
       description: 'Perfect for small businesses',
       features: [
         'Up to 100 bookings/month',
-        'Basic calendar management',
-        'Email notifications',
-        'Customer database',
-        'Basic reporting'
+        'Advanced calendar management',
+        'SMS & Email notifications',
+        'Payment processing',
+        'Advanced reporting',
+        'Priority support'
       ],
-      buttonText: 'Get Started',
+      buttonText: 'Coming Soon',
       buttonVariant: 'outline' as const,
-      popular: false
+      popular: false,
+      available: false
     },
     {
       name: 'Professional',
@@ -29,14 +48,15 @@ export default function PricingSection() {
       features: [
         'Up to 500 bookings/month',
         'Advanced scheduling',
-        'SMS & Email notifications',
-        'Payment processing',
+        'Multi-location support',
+        'Custom integrations',
         'Advanced analytics',
         'API access'
       ],
-      buttonText: 'Get Started',
-      buttonVariant: 'default' as const,
-      popular: true
+      buttonText: 'Coming Soon',
+      buttonVariant: 'outline' as const,
+      popular: true,
+      available: false
     },
     {
       name: 'Enterprise',
@@ -45,15 +65,16 @@ export default function PricingSection() {
       description: 'For large organizations',
       features: [
         'Unlimited bookings',
-        'Multi-location support',
-        'Custom integrations',
-        'Priority support',
         'White-label options',
-        'Dedicated account manager'
+        'Custom integrations',
+        'Dedicated account manager',
+        'Advanced security',
+        'SLA guarantee'
       ],
       buttonText: 'Contact Sales',
       buttonVariant: 'outline' as const,
-      popular: false
+      popular: false,
+      available: false
     }
   ];
 
@@ -65,7 +86,7 @@ export default function PricingSection() {
             Simple, transparent pricing
           </h2>
           <p className="landing-pricing-subtitle">
-            Choose the plan that's right for your business
+            Start free today. Premium plans coming soon!
           </p>
         </div>
         <div className="landing-pricing-grid">
@@ -93,7 +114,11 @@ export default function PricingSection() {
                     </div>
                   ))}
                 </div>
-                <Button className={`landing-pricing-button landing-pricing-button-${plan.buttonVariant}`} variant={plan.buttonVariant}>
+                <Button 
+                  className={`landing-pricing-button landing-pricing-button-${plan.buttonVariant}`} 
+                  variant={plan.buttonVariant}
+                  disabled={!plan.available}
+                >
                   {plan.buttonText}
                 </Button>
               </CardContent>

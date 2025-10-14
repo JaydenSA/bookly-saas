@@ -21,6 +21,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
         plan: updated.plan,
         businessId: updated.businessId,
         phone: updated.phone,
+        theme: updated.theme,
         createdAt: updated.createdAt,
       }
     }, { status: 200 });

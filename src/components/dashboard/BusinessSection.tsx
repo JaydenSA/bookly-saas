@@ -142,6 +142,33 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
       setIsEditing(true);
       setError(null);
 
+      // Find images that were removed to delete them from server
+      const previousImages = business.images || [];
+      const removedImages = previousImages.filter(img => !images.includes(img));
+      
+      // Delete removed images from server
+      for (const imageUrl of removedImages) {
+        try {
+          await fetch(`/api/upload/image/delete?url=${encodeURIComponent(imageUrl)}`, {
+            method: 'DELETE',
+          });
+        } catch (error) {
+          console.warn('Failed to delete removed image:', imageUrl, error);
+        }
+      }
+
+      // Check if logo was removed
+      const previousLogo = business.logoUrl || '';
+      if (previousLogo && previousLogo !== logoUrl) {
+        try {
+          await fetch(`/api/upload/image/delete?url=${encodeURIComponent(previousLogo)}`, {
+            method: 'DELETE',
+          });
+        } catch (error) {
+          console.warn('Failed to delete removed logo:', previousLogo, error);
+        }
+      }
+
       const response = await fetch(`/api/businesses/${business._id}`, {
         method: 'PUT',
         headers: {
@@ -211,6 +238,17 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
     });
 
     try {
+      // Delete all gallery images from server
+      for (const imageUrl of images) {
+        try {
+          await fetch(`/api/upload/image/delete?url=${encodeURIComponent(imageUrl)}`, {
+            method: 'DELETE',
+          });
+        } catch (error) {
+          console.warn('Failed to delete gallery image:', imageUrl, error);
+        }
+      }
+
       // Update the database to remove gallery images
       const response = await fetch(`/api/businesses/${business._id}`, {
         method: 'PUT',
@@ -379,20 +417,6 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
                 <p className="text-sm">{business.description}</p>
               </div>
             )}
-
-            <div className="pt-4 border-t">
-              <div className="flex gap-2 flex-wrap">
-                <Button variant="outline" size="sm">
-                  View Bookings
-                </Button>
-                <Button variant="outline" size="sm">
-                  Manage Services
-                </Button>
-                <Button variant="outline" size="sm">
-                  Settings
-                </Button>
-              </div>
-            </div>
           </div>
         ) : (
           <div className="text-center py-8">

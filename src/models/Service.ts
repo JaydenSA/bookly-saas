@@ -2,6 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 
 const ServiceSchema = new Schema({
   businessId: { type: Schema.Types.ObjectId, ref: 'Business', required: true, index: true },
+  categoryId: { type: Schema.Types.ObjectId, ref: 'Category', index: true },
   name: { type: String, required: true },
   description: { type: String },
   price: { type: Number, required: true, min: 0 },

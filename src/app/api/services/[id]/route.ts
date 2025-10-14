@@ -1,5 +1,6 @@
 import dbConnect from '@/lib/mongodb';
 import Service from '@/models/Service';
+import Category from '@/models/Category';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -7,7 +8,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     await dbConnect();
     const { id } = await context.params;
     const body = await request.json();
-    const updated = await Service.findByIdAndUpdate(id, body, { new: true, runValidators: true });
+    const updated = await Service.findByIdAndUpdate(id, body, { new: true, runValidators: true })
+      .populate('categoryId', 'name color');
     if (!updated) return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {

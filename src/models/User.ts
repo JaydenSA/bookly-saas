@@ -7,6 +7,16 @@ const UserSchema = new Schema({
   role: { type: String, enum: ['owner', 'staff'], required: true },
   businessId: { type: Schema.Types.ObjectId, ref: 'Business' },
   phone: { type: String },
+  theme: { type: String, enum: ['light', 'dark', 'system'], default: 'system' },
+  permissions: {
+    canManageServices: { type: Boolean, default: false },
+    canManageBookings: { type: Boolean, default: true },
+    canManageCustomers: { type: Boolean, default: false },
+    canViewReports: { type: Boolean, default: false },
+    canManageStaff: { type: Boolean, default: false },
+    canManageBusiness: { type: Boolean, default: false },
+  },
+  isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
   // 
   plan: { type: String, enum: ['free', 'pro', 'enterprise'], default: 'free' },

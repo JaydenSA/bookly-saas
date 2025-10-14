@@ -7,6 +7,7 @@ export interface Service {
   duration: number; // in minutes
   price: number;
   businessId: string;
+  categoryId?: string | { _id: string; name: string; color: string };
   isActive: boolean;
   depositRequired: boolean;
   createdAt: string;

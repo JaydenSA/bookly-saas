@@ -11,15 +11,40 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import BusinessSection from '@/components/dashboard/BusinessSection';
 import ServicesSection from '@/components/dashboard/ServicesSection';
+import CategoriesSection from '@/components/dashboard/CategoriesSection';
+import StaffSection from '@/components/dashboard/StaffSection';
+import BookingsSection from '@/components/dashboard/BookingsSection';
+import SettingsSection from '@/components/dashboard/SettingsSection';
 import { useSnackbar } from '@/hooks/useSnackbar';
+import { usePermissions } from '@/hooks/usePermissions';
 import { UserData } from '@/types';
 
 export default function DashboardPage() {
   const { user: kindeUser, isAuthenticated, isLoading } = useKindeAuth();
+  const { 
+    canManageServices, 
+    canManageBusiness, 
+    canManageBookings,
+    canManageCustomers,
+    canViewReports,
+    canManageStaff,
+    isLoadingPermissions
+  } = usePermissions();
+
+  // Debug permissions
+  console.log('Dashboard - Permissions:', {
+    canManageServices,
+    canManageBusiness,
+    canManageBookings,
+    canManageCustomers,
+    canViewReports,
+    canManageStaff
+  });
   const router = useRouter();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [activeSection, setActiveSection] = useState<'overview' | 'settings'>('overview');
   const [editForm, setEditForm] = useState({
     name: '',
     phone: '',
@@ -96,6 +121,10 @@ export default function DashboardPage() {
     }
   };
 
+  const handleUserUpdate = (updatedUser: UserData) => {
+    setUserData(updatedUser);
+  };
+
 
   if (isLoading || isLoadingUser) {
     return (
@@ -139,12 +168,33 @@ export default function DashboardPage() {
       <div className="general-container py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="dashboard-title">Dashboard</h1>
-          <p className="dashboard-subtitle">Welcome back, {userData.name}!</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="dashboard-title">Dashboard</h1>
+              <p className="dashboard-subtitle">Welcome back, {userData.name}!</p>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                variant={activeSection === 'overview' ? 'default' : 'outline'}
+                onClick={() => setActiveSection('overview')}
+              >
+                Overview
+              </Button>
+              <Button
+                variant={activeSection === 'settings' ? 'default' : 'outline'}
+                onClick={() => setActiveSection('settings')}
+              >
+                Settings
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* User Info Card */}
-        <Card className="mb-8">
+        {/* Conditional Content */}
+        {activeSection === 'overview' ? (
+          <>
+            {/* User Info Card */}
+            <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center">
@@ -263,39 +313,88 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Business Section */}
-        <BusinessSection userId={userData.id} />
+        {/* Business Section - Only show for users who can manage business */}
+        {!isLoadingPermissions && canManageBusiness && (
+          <BusinessSection userId={userData.id} />
+        )}
 
-        {/* Services Section - Only show if user has a business */}
-        {userData.businessId && (
+        {/* Categories Section - Only show if user can manage services */}
+        {!isLoadingPermissions && userData.businessId && canManageServices && (
+          <CategoriesSection businessId={userData.businessId} />
+        )}
+
+        {/* Services Section - Only show if user has a business and can manage services */}
+        {!isLoadingPermissions && userData.businessId && canManageServices && (
           <ServicesSection businessId={userData.businessId} />
         )}
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Staff Section - Only show for owners with a business */}
+        {!isLoadingPermissions && userData.businessId && userData.role === 'owner' && (
+          <StaffSection businessId={userData.businessId} />
+        )}
+
+        {/* Bookings Section - Show for users who can manage bookings */}
+        {!isLoadingPermissions && userData.businessId && canManageBookings && (
+          <BookingsSection businessId={userData.businessId} />
+        )}
+
+        {/* No Access Message - Show for staff members with no permissions */}
+        {userData.role === 'staff' && 
+         !isLoadingPermissions &&
+         !canManageServices && 
+         !canManageBookings && 
+         !canManageBusiness && 
+         !canManageCustomers && 
+         !canViewReports && 
+         !canManageStaff && (
           <Card>
             <CardHeader>
-              <CardTitle>Bookings</CardTitle>
-              <CardDescription>View and manage bookings</CardDescription>
+              <CardTitle>Limited Access</CardTitle>
+              <CardDescription>
+                You currently don't have access to any management features.
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="link" className="p-0 h-auto">
-                View Bookings →
-              </Button>
+              <p className="text-muted-foreground">
+                Contact your business owner to request additional permissions for managing services, bookings, or other features.
+              </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Settings</CardTitle>
-              <CardDescription>Account and app preferences</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="link" className="p-0 h-auto">
-                Open Settings →
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        )}
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Bookings</CardTitle>
+                  <CardDescription>View and manage bookings</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="link" className="p-0 h-auto">
+                    View Bookings →
+                  </Button>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Settings</CardTitle>
+                  <CardDescription>Account and app preferences</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button 
+                    variant="link" 
+                    className="p-0 h-auto"
+                    onClick={() => setActiveSection('settings')}
+                  >
+                    Open Settings →
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        ) : (
+          <SettingsSection userData={userData} onUserUpdate={handleUserUpdate} />
+        )}
       </div>
     </div>
   );

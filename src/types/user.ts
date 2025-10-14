@@ -1,5 +1,7 @@
 // User-related types and interfaces
 
+import { StaffPermissions } from './staff';
+
 export interface User {
   _id: string;
   kindeUserId: string;
@@ -8,6 +10,9 @@ export interface User {
   role: 'owner' | 'staff';
   businessId?: string;
   phone?: string;
+  theme?: 'light' | 'dark' | 'system';
+  permissions?: StaffPermissions;
+  isActive: boolean;
   createdAt: string;
 }
 
@@ -20,5 +25,8 @@ export interface UserData {
   plan: 'free' | 'pro' | 'enterprise';
   businessId?: string;
   phone?: string;
+  theme?: 'light' | 'dark' | 'system';
+  permissions?: StaffPermissions;
+  isActive: boolean;
   createdAt: string;
 }

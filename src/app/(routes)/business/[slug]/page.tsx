@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import { MapPin, Phone, Mail, Globe, Clock, Percent, Building, ArrowLeft, Scissors, Search, Star, Package } from 'lucide-react';
+import { MapPin, Phone, Mail, Globe, Clock, Percent, Building, ArrowLeft, Scissors, Search, Star, Package, Tag, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import Link from 'next/link';
-import { Business, Service } from '@/types';
+import { Business, Service, Category } from '@/types';
 
 export default function BusinessPage() {
   const params = useParams();
@@ -17,9 +17,11 @@ export default function BusinessPage() {
   
   const [business, setBusiness] = useState<Business | null>(null);
   const [services, setServices] = useState<Service[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [serviceSearchQuery, setServiceSearchQuery] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const { showError } = useSnackbar();
 
   useEffect(() => {
@@ -40,6 +42,13 @@ export default function BusinessPage() {
             if (servicesResponse.ok) {
               const servicesData = await servicesResponse.json();
               setServices(servicesData.services || []);
+            }
+
+            // Fetch categories for this business
+            const categoriesResponse = await fetch(`/api/categories?businessId=${business._id}`);
+            if (categoriesResponse.ok) {
+              const categoriesData = await categoriesResponse.json();
+              setCategories(categoriesData.categories || []);
             }
           } else {
             showError('Business not found', {
@@ -76,14 +85,25 @@ export default function BusinessPage() {
     }
   };
 
-  // Filter services based on search query
+  // Filter services based on search query and category
   const filteredServices = services.filter(service => {
-    if (!serviceSearchQuery.trim()) return true;
-    const query = serviceSearchQuery.toLowerCase();
-    return (
-      service.name.toLowerCase().includes(query) ||
-      service.description?.toLowerCase().includes(query)
-    );
+    // Search filter
+    if (serviceSearchQuery.trim()) {
+      const query = serviceSearchQuery.toLowerCase();
+      const matchesSearch = (
+        service.name.toLowerCase().includes(query) ||
+        service.description?.toLowerCase().includes(query)
+      );
+      if (!matchesSearch) return false;
+    }
+
+    // Category filter
+    if (selectedCategoryId) {
+      const serviceCategoryId = typeof service.categoryId === 'object' ? service.categoryId._id : service.categoryId;
+      return serviceCategoryId === selectedCategoryId;
+    }
+
+    return true;
   });
 
   if (isLoading) {
@@ -134,8 +154,8 @@ export default function BusinessPage() {
               // fill
               className="object-cover w-full h-full"
               priority
-              width={1000}
-              height={1000}
+              width={1920}
+              height={1080}
             />
             {/* Image Navigation */}
             {business.images.length > 1 && (
@@ -301,8 +321,8 @@ export default function BusinessPage() {
             </h3>
             <p className="general-text-secondary mb-6">Choose from our range of professional services</p>
             
-            {/* Service Search */}
-            <div className="mb-6">
+            {/* Service Search and Filters */}
+            <div className="mb-6 space-y-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 general-icon-primary general-icon-md" />
                 <input
@@ -313,40 +333,119 @@ export default function BusinessPage() {
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 />
               </div>
+              
+              {/* Category Filter */}
+              {categories.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={selectedCategoryId === '' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedCategoryId('')}
+                    className="flex items-center gap-2"
+                  >
+                    <Package className="h-4 w-4" />
+                    All Services
+                  </Button>
+                  {categories.map((category) => (
+                    <Button
+                      key={category._id}
+                      variant={selectedCategoryId === category._id ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setSelectedCategoryId(category._id)}
+                      className="flex items-center gap-2"
+                    >
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      <Tag className="h-4 w-4" />
+                      {category.name}
+                    </Button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Services List */}
+            {/* Services List Grouped by Category */}
             {filteredServices.filter(service => service.isActive).length > 0 ? (
-              <div className="space-y-4">
-                {filteredServices
-                  .filter(service => service.isActive)
-                  .map((service) => (
-                    <div key={service._id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <div className="flex-1">
-                        <h5 className="font-medium text-gray-900 dark:text-white">{service.name}</h5>
-                        {service.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{service.description}</p>
-                        )}
-                        <div className="flex items-center mt-2 space-x-4">
-                          <span className="text-sm text-gray-500 dark:text-gray-400">{service.duration} min</span>
-                          {service.depositRequired && (
-                            <>
-                              <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
-                              <span className="text-sm text-orange-600 dark:text-orange-400 font-medium">Deposit required</span>
-                            </>
-                          )}
-                        </div>
+              <div className="space-y-8">
+                {(() => {
+                  // Group services by category
+                  const groupedServices = filteredServices
+                    .filter(service => service.isActive)
+                    .reduce((groups, service) => {
+                      const categoryId = typeof service.categoryId === 'object' ? service.categoryId._id : service.categoryId;
+                      const categoryName = typeof service.categoryId === 'object' 
+                        ? service.categoryId.name 
+                        : categories.find(cat => cat._id === service.categoryId)?.name || 'Uncategorized';
+                      const categoryColor = typeof service.categoryId === 'object' 
+                        ? service.categoryId.color 
+                        : categories.find(cat => cat._id === service.categoryId)?.color || '#6B7280';
+                      
+                      if (!groups[categoryName]) {
+                        groups[categoryName] = {
+                          categoryId,
+                          categoryName,
+                          categoryColor,
+                          services: []
+                        };
+                      }
+                      groups[categoryName].services.push(service);
+                      return groups;
+                    }, {} as Record<string, { categoryId: string | undefined; categoryName: string; categoryColor: string; services: Service[] }>);
+
+                  // Sort categories by name
+                  const sortedCategories = Object.values(groupedServices).sort((a, b) => a.categoryName.localeCompare(b.categoryName));
+
+                  return sortedCategories.map((categoryGroup) => (
+                    <div key={categoryGroup.categoryName} className="space-y-4">
+                      {/* Category Header */}
+                      <div className="flex items-center gap-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                        <div 
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: categoryGroup.categoryColor }}
+                        />
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {categoryGroup.categoryName}
+                        </h4>
+                        <Badge variant="secondary" className="text-xs">
+                          {categoryGroup.services.length} service{categoryGroup.services.length !== 1 ? 's' : ''}
+                        </Badge>
                       </div>
-                      <div className="flex items-center space-x-4">
-                        <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                          R{service.price.toFixed(2)}
-                        </span>
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                          Book
-                        </Button>
+
+                      {/* Services in this category */}
+                      <div className="space-y-3">
+                        {categoryGroup.services.map((service) => (
+                          <div key={service._id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div className="flex-1">
+                              <h5 className="font-medium text-gray-900 dark:text-white">{service.name}</h5>
+                              {service.description && (
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{service.description}</p>
+                              )}
+                              <div className="flex items-center mt-2 space-x-4">
+                                <span className="text-sm text-gray-500 dark:text-gray-400">{service.duration} min</span>
+                                {service.depositRequired && (
+                                  <>
+                                    <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
+                                    <span className="text-sm text-orange-600 dark:text-orange-400 font-medium">Deposit required</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                                R{service.price.toFixed(2)}
+                              </span>
+                              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                                Book
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
+                  ));
+                })()}
               </div>
             ) : (
               <div className="text-center py-8">

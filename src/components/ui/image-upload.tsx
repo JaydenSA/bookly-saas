@@ -105,9 +105,27 @@ export default function ImageUpload({
     setDragActive(false);
   }, []);
 
-  const removeImage = (index: number) => {
+  const removeImage = async (index: number) => {
+    const imageToRemove = images[index];
     const newImages = images.filter((_, i) => i !== index);
+    
+    // Update the UI immediately
     onImagesChange(newImages);
+    
+    // Delete the file from server
+    try {
+      const response = await fetch(`/api/upload/image/delete?url=${encodeURIComponent(imageToRemove)}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        console.warn('Failed to delete image from server:', imageToRemove);
+        // Don't show error to user since UI is already updated
+      }
+    } catch (error) {
+      console.error('Error deleting image from server:', error);
+      // Don't show error to user since UI is already updated
+    }
   };
 
   const openFileDialog = () => {
@@ -169,7 +187,7 @@ export default function ImageUpload({
                   <Button
                     variant="destructive"
                     size="icon"
-                    className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 right-2 h-6 w-6 opacity-80 hover:opacity-100 transition-opacity"
                     onClick={() => removeImage(index)}
                   >
                     <X className="h-3 w-3" />

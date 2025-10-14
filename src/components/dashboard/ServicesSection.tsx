@@ -1,19 +1,23 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Edit2, Trash2, Clock, DollarSign, Scissors } from 'lucide-react';
+import { Plus, Edit2, Trash2, Clock, DollarSign, Scissors, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useSnackbar } from '@/hooks/useSnackbar';
-import { Service, ServicesSectionProps } from '@/types';
+import { usePermissions } from '@/hooks/usePermissions';
+import { Service, ServicesSectionProps, Category } from '@/types';
 
 export default function ServicesSection({ businessId }: ServicesSectionProps) {
+  const { canManageServices } = usePermissions();
   const [services, setServices] = useState<Service[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
@@ -25,6 +29,7 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
     description: '',
     duration: 30,
     price: 0,
+    categoryId: '',
   });
   const { showSuccess, showError, showLoading, dismiss } = useSnackbar();
 
@@ -56,11 +61,24 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
     }
   }, [businessId, showError]);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/categories?businessId=${businessId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data.categories || []);
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  }, [businessId]);
+
   useEffect(() => {
     if (businessId) {
       fetchServices();
+      fetchCategories();
     }
-  }, [businessId, fetchServices]);
+  }, [businessId, fetchServices, fetchCategories]);
 
   const resetForm = () => {
     setFormData({
@@ -68,6 +86,7 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
       description: '',
       duration: 30,
       price: 0,
+      categoryId: '',
     });
     setEditingService(null);
   };
@@ -200,6 +219,7 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
       description: service.description || '',
       duration: service.duration,
       price: service.price,
+      categoryId: typeof service.categoryId === 'object' ? service.categoryId._id : (service.categoryId || ''),
     });
     setIsDialogOpen(true);
   };
@@ -247,13 +267,14 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
             <Scissors className="h-5 w-5 mr-2" />
             Services
           </CardTitle>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Service
-              </Button>
-            </DialogTrigger>
+          {canManageServices && (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={resetForm}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Service
+                </Button>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>
@@ -286,6 +307,31 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
                     placeholder="Describe what this service includes..."
                     rows={3}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    value={formData.categoryId || "none"}
+                    onValueChange={(value) => setFormData({ ...formData, categoryId: value === "none" ? "" : value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Category</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category._id} value={category._id}>
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: category.color }}
+                            />
+                            {category.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -335,7 +381,8 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
                 </div>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -364,6 +411,15 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
                     <Badge variant={service?.isActive ? 'default' : 'secondary'}>
                       {service?.isActive ? 'Active' : 'Inactive'}
                     </Badge>
+                    {service?.categoryId && (
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        <Tag className="h-3 w-3" />
+                        {typeof service.categoryId === 'object' 
+                          ? service.categoryId.name 
+                          : categories.find(cat => cat._id === service.categoryId)?.name || 'Unknown Category'
+                        }
+                      </Badge>
+                    )}
                   </div>
                   {service?.description && (
                     <p className="text-sm text-muted-foreground mb-2">
@@ -381,25 +437,27 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-col md:flex-row">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => service && openEditDialog(service)}
-                    disabled={isUpdating === service?._id}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => service?._id && handleDeleteService(service._id)}
-                    disabled={isDeleting === service?._id}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                {canManageServices && (
+                  <div className="flex items-center gap-2 flex-col md:flex-row">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => service && openEditDialog(service)}
+                      disabled={isUpdating === service?._id}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => service?._id && handleDeleteService(service._id)}
+                      disabled={isDeleting === service?._id}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
