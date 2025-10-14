@@ -37,7 +37,7 @@ import { useTheme } from '@/components/providers/ThemeProvider';
 
 interface SettingsSectionProps {
   userData: UserData;
-  onUserUpdate: (updatedUser: UserData) => void;
+  onUserUpdate?: (updatedUser: UserData) => void;
 }
 
 export default function SettingsSection({ userData, onUserUpdate }: SettingsSectionProps) {
@@ -103,7 +103,7 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
       }
 
       const updatedData = await response.json();
-      onUserUpdate(updatedData.user);
+      onUserUpdate?.(updatedData.user);
       
       // Update theme in the theme provider
       if (editForm.theme) {
@@ -259,7 +259,7 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
+                    onClick={() => setActiveTab(tab.id as 'general' | 'notifications' | 'security' | 'billing')}
                     className={`settings-nav-item ${
                       activeTab === tab.id
                         ? 'settings-nav-item-active'
@@ -566,7 +566,7 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
                    <div className="flex items-center justify-between p-4 border rounded-lg bg-green-50 dark:bg-green-950">
                      <div className="space-y-1">
                        <Label className="text-lg font-semibold capitalize text-green-700 dark:text-green-300">{userData.plan} Plan</Label>
-                       <p className="text-sm text-green-600 dark:text-green-400">You're currently on our free plan</p>
+                       <p className="text-sm text-green-600 dark:text-green-400">You&apos;re currently on our free plan</p>
                      </div>
                      <div className="text-right">
                        <p className="text-2xl font-bold text-green-700 dark:text-green-300">$0</p>
@@ -634,7 +634,7 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
                    </div>
                    <div className="p-4 bg-muted rounded-lg">
                      <p className="text-sm text-muted-foreground text-center">
-                       Premium features are currently in development. You'll be notified when upgrade options become available.
+                       Premium features are currently in development. You&apos;ll be notified when upgrade options become available.
                      </p>
                    </div>
                  </CardContent>

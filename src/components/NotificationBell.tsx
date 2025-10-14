@@ -78,11 +78,11 @@ export default function NotificationBell() {
                       <div className="flex items-center gap-2 mb-1">
                         <UserPlus className="h-4 w-4 text-blue-500" />
                         <span className="font-medium text-sm">
-                          {(invite.businessId as any)?.name || 'Business'}
+                          {(invite.businessId as unknown as { name: string })?.name || 'Business'}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Invited by {(invite.invitedBy as any)?.name || 'Unknown'}
+                        Invited by {(invite.invitedBy as unknown as { name: string })?.name || 'Unknown'}
                       </p>
                       <div className="flex items-center gap-1 mt-1">
                         <Clock className="h-3 w-3 text-muted-foreground" />

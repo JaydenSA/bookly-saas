@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+import { StaffPermissions } from '@/types';
 
 export async function PUT(
   request: NextRequest,
@@ -29,7 +30,7 @@ export async function PUT(
 
     console.log('PUT request for staff member:', { id, permissions, isActive });
 
-    const updateData: any = {};
+    const updateData: { permissions?: StaffPermissions; isActive?: boolean } = {};
     
     // Always update permissions if provided
     if (permissions) {

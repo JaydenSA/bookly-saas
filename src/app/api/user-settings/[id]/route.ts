@@ -6,7 +6,7 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { getUser } = getKindeServerSession();
@@ -21,7 +21,8 @@ export async function GET(
 
     await connectDB();
     
-    const userSettings = await UserSettings.findById(params.id);
+    const { id } = await params;
+    const userSettings = await UserSettings.findById(id);
     
     if (!userSettings) {
       return NextResponse.json(
@@ -42,7 +43,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { getUser } = getKindeServerSession();
@@ -60,8 +61,9 @@ export async function PUT(
     const body = await request.json();
     const { notifications, appearance } = body;
 
+    const { id } = await params;
     const userSettings = await UserSettings.findByIdAndUpdate(
-      params.id,
+      id,
       {
         ...(notifications && { notifications }),
         ...(appearance && { appearance }),
@@ -93,7 +95,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { getUser } = getKindeServerSession();
@@ -108,7 +110,8 @@ export async function DELETE(
 
     await connectDB();
     
-    const userSettings = await UserSettings.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const userSettings = await UserSettings.findByIdAndDelete(id);
     
     if (!userSettings) {
       return NextResponse.json(

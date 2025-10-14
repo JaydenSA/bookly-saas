@@ -17,10 +17,9 @@ import BookingsSection from '@/components/dashboard/BookingsSection';
 import SettingsSection from '@/components/dashboard/SettingsSection';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { usePermissions } from '@/hooks/usePermissions';
-import { UserData } from '@/types';
 
 export default function DashboardPage() {
-  const { user: kindeUser, isAuthenticated, isLoading } = useKindeAuth();
+  const { isAuthenticated, isLoading } = useKindeAuth();
   const { 
     canManageServices, 
     canManageBusiness, 
@@ -28,7 +27,8 @@ export default function DashboardPage() {
     canManageCustomers,
     canViewReports,
     canManageStaff,
-    isLoadingPermissions
+    isLoadingPermissions,
+    userData: permissionsUserData
   } = usePermissions();
 
   // Debug permissions
@@ -38,11 +38,10 @@ export default function DashboardPage() {
     canManageBookings,
     canManageCustomers,
     canViewReports,
-    canManageStaff
+    canManageStaff,
+    permissionsUserData
   });
   const router = useRouter();
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [activeSection, setActiveSection] = useState<'overview' | 'settings'>('overview');
   const [editForm, setEditForm] = useState({
@@ -51,37 +50,24 @@ export default function DashboardPage() {
   });
   const { showSuccess, showError, showLoading, dismiss } = useSnackbar();
 
+  // Use userData from usePermissions hook instead of fetching separately
+  const userData = permissionsUserData;
+
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (isLoading) return;
-      
-      if (!isAuthenticated || !kindeUser) {
-        router.push('/');
-        return;
-      }
+    if (!isLoading && !isAuthenticated) {
+      router.push('/');
+      return;
+    }
+  }, [isLoading, isAuthenticated, router]);
 
-      try {
-        const response = await fetch(`/api/users/me?kindeUserId=${kindeUser.id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch user data');
-        }
-        
-        const data = await response.json();
-        setUserData(data.user);
-        setEditForm({
-          name: data.user.name,
-          phone: data.user.phone || '',
-        });
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        router.push('/welcome');
-      } finally {
-        setIsLoadingUser(false);
-      }
-    };
-
-    fetchUserData();
-  }, [isAuthenticated, kindeUser, isLoading, router]);
+  useEffect(() => {
+    if (userData) {
+      setEditForm({
+        name: userData.name,
+        phone: userData.phone || '',
+      });
+    }
+  }, [userData]);
 
   const handleSave = async () => {
     if (!userData) return;
@@ -104,9 +90,9 @@ export default function DashboardPage() {
         throw new Error(errorData.message || 'Failed to update user');
       }
 
-      const updatedData = await response.json();
-      setUserData(updatedData.user);
+      await response.json();
       setIsEditing(false);
+      // User data will be refreshed through the usePermissions hook
       
       dismiss(loadingToast);
       showSuccess('Profile updated successfully!', {
@@ -121,12 +107,9 @@ export default function DashboardPage() {
     }
   };
 
-  const handleUserUpdate = (updatedUser: UserData) => {
-    setUserData(updatedUser);
-  };
 
 
-  if (isLoading || isLoadingUser) {
+  if (isLoading || isLoadingPermissions) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -351,7 +334,7 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle>Limited Access</CardTitle>
               <CardDescription>
-                You currently don't have access to any management features.
+                You currently don&apos;t have access to any management features.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -393,7 +376,7 @@ export default function DashboardPage() {
             </div>
           </>
         ) : (
-          <SettingsSection userData={userData} onUserUpdate={handleUserUpdate} />
+          <SettingsSection userData={userData} />
         )}
       </div>
     </div>

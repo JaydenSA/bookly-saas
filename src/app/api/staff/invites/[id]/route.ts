@@ -6,7 +6,7 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { getUser } = getKindeServerSession();
@@ -24,12 +24,13 @@ export async function PUT(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { permissions } = body;
 
     const invite = await StaffInvite.findOneAndUpdate(
       { 
-        _id: params.id,
+        _id: id,
         businessId: dbUser.businessId,
         status: 'pending'
       },
@@ -50,7 +51,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { getUser } = getKindeServerSession();
@@ -68,8 +69,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
+    const { id } = await params;
     const invite = await StaffInvite.findOneAndDelete({
-      _id: params.id,
+      _id: id,
       businessId: dbUser.businessId
     });
 

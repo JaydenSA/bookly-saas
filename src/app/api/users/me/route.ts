@@ -27,6 +27,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    console.log('API /users/me - Found user:', {
+      id: user._id,
+      role: user.role,
+      permissions: user.permissions,
+      hasPermissions: !!user.permissions
+    });
+
     return NextResponse.json({
       success: true,
       user: {
@@ -38,8 +45,32 @@ export async function GET(request: NextRequest) {
         plan: user.plan,
         businessId: user.businessId,
         phone: user.phone,
+        theme: user.theme,
+        permissions: user.permissions || {
+          canManageServices: false,
+          canManageBookings: user.role === 'owner' ? true : (user.permissions?.canManageBookings || false),
+          canManageCustomers: false,
+          canViewReports: false,
+          canManageStaff: false,
+          canManageBusiness: false,
+        },
+        isActive: user.isActive,
         createdAt: user.createdAt,
       }
+    });
+
+    console.log('API /users/me - Returning user data:', {
+      id: user._id,
+      role: user.role,
+      permissions: user.permissions || 'default permissions',
+      hasPermissions: !!(user.permissions || {
+        canManageServices: false,
+        canManageBookings: user.role === 'owner' ? true : (user.permissions?.canManageBookings || false),
+        canManageCustomers: false,
+        canViewReports: false,
+        canManageStaff: false,
+        canManageBusiness: false,
+      })
     });
 
   } catch (error) {

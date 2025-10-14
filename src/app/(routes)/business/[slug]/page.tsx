@@ -452,7 +452,7 @@ export default function BusinessPage() {
                 <Scissors className="general-icon-primary general-icon-md mx-auto mb-4 opacity-50" />
                 {serviceSearchQuery.trim() ? (
                   <>
-                    <p className="text-gray-500 dark:text-gray-400">No services found matching "{serviceSearchQuery}".</p>
+                    <p className="text-gray-500 dark:text-gray-400">No services found matching &quot;{serviceSearchQuery}&quot;.</p>
                     <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
                       Try adjusting your search terms.
                     </p>

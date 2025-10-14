@@ -34,7 +34,7 @@ export default function TestimonialsSection() {
             What our customers say
           </h2>
           <p className="landing-testimonials-subtitle">
-            Don't just take our word for it
+            Don&apos;t just take our word for it
           </p>
         </div>
         <div className="landing-testimonials-grid">
@@ -47,7 +47,7 @@ export default function TestimonialsSection() {
                   ))}
                 </div>
                 <p className="landing-testimonial-text">
-                  "{testimonial.content}"
+                  &quot;{testimonial.content}&quot;
                 </p>
                 <div className="landing-testimonial-author">
                   <div className={`landing-testimonial-avatar ${testimonial.avatarColor}`}>

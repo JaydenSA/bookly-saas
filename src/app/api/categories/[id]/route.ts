@@ -2,16 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Category from '@/models/Category';
 import Service from '@/models/Service';
+import User from '@/models/User';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    const category = await Category.findById(params.id);
+    const { id } = await params;
+    const category = await Category.findById(id);
     
     if (!category) {
       return NextResponse.json(
@@ -32,7 +34,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { getUser } = getKindeServerSession();
@@ -47,10 +49,11 @@ export async function PUT(
 
     await connectDB();
     
+    const { id } = await params;
     const body = await request.json();
     const { name, description, color, isActive } = body;
 
-    const category = await Category.findById(params.id);
+    const category = await Category.findById(id);
     
     if (!category) {
       return NextResponse.json(
@@ -64,7 +67,7 @@ export async function PUT(
       const existingCategory = await Category.findOne({ 
         businessId: category.businessId, 
         name: { $regex: new RegExp(`^${name}$`, 'i') },
-        _id: { $ne: params.id }
+         _id: { $ne: id }
       });
 
       if (existingCategory) {
@@ -76,7 +79,7 @@ export async function PUT(
     }
 
     const updatedCategory = await Category.findByIdAndUpdate(
-      params.id,
+      id,
       {
         ...(name && { name }),
         ...(description !== undefined && { description }),
@@ -98,7 +101,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { getUser } = getKindeServerSession();
@@ -113,7 +116,8 @@ export async function DELETE(
 
     await connectDB();
     
-    const category = await Category.findById(params.id);
+    const { id } = await params;
+    const category = await Category.findById(id);
     
     if (!category) {
       return NextResponse.json(
@@ -124,7 +128,7 @@ export async function DELETE(
 
     // Check if any services are using this category
     const servicesUsingCategory = await Service.countDocuments({ 
-      categoryId: params.id 
+      categoryId: id 
     });
 
     if (servicesUsingCategory > 0) {
@@ -137,7 +141,7 @@ export async function DELETE(
       );
     }
 
-    await Category.findByIdAndDelete(params.id);
+    await Category.findByIdAndDelete(id);
 
     return NextResponse.json({ message: 'Category deleted successfully' });
   } catch (error) {

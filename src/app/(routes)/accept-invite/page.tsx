@@ -148,13 +148,13 @@ export default function AcceptInvitePage() {
           </div>
           <CardTitle>Staff Invitation</CardTitle>
           <CardDescription>
-            You've been invited to join a business team
+            You&apos;ve been invited to join a business team
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Business Info */}
           <div className="text-center">
-            <h3 className="font-semibold text-lg mb-2">{invite.businessId.name}</h3>
+            <h3 className="font-semibold text-lg mb-2">{(invite.businessId as unknown as { name: string })?.name || 'Business'}</h3>
             <div className="flex items-center justify-center gap-2 mb-4">
               {getStatusBadge(invite.status)}
             </div>

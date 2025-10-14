@@ -573,7 +573,7 @@ export default function StaffSection({ businessId }: StaffSectionProps) {
                   Pending Invitations
                 </CardTitle>
                 <CardDescription>
-                  Staff invitations that haven't been accepted yet
+                  Staff invitations that haven&apos;t been accepted yet
                 </CardDescription>
               </div>
               <Button
