@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { LoginLink, RegisterLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { useKindeAuth } from "@kinde-oss/kinde-auth-nextjs";
 import { LogOut, Sun, Moon, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,9 +88,9 @@ export default function Navbar() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <LogoutLink className="w-full cursor-pointer">
+                    <Link href="/logout" className="w-full cursor-pointer">
                       Log out
-                    </LogoutLink>
+                    </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -104,10 +103,10 @@ export default function Navbar() {
               </Button>
               
               <Button variant="ghost" asChild>
-                <LoginLink postLoginRedirectURL="/dashboard">Sign in</LoginLink>
+                <Link href="/login">Sign in</Link>
               </Button>
               <Button asChild>
-                <RegisterLink postLoginRedirectURL="/welcome">Sign up</RegisterLink>
+                <Link href="/register">Sign up</Link>
               </Button>
             </div>
           )}

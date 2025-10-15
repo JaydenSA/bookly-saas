@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,11 +60,7 @@ export default function StaffSection({ businessId }: StaffSectionProps) {
   });
   const { showSuccess, showError, showLoading, dismiss } = useSnackbar();
 
-  useEffect(() => {
-    fetchStaffData();
-  }, []);
-
-  const fetchStaffData = async () => {
+  const fetchStaffData = useCallback(async () => {
     try {
       setIsLoading(true);
       const [staffResponse, invitesResponse] = await Promise.all([
@@ -88,7 +84,11 @@ export default function StaffSection({ businessId }: StaffSectionProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    fetchStaffData();
+  }, [fetchStaffData]);
 
   // Listen for refresh events and add periodic refresh
   useEffect(() => {
@@ -106,7 +106,7 @@ export default function StaffSection({ businessId }: StaffSectionProps) {
       window.removeEventListener('staffDataRefresh', handleRefresh);
       clearInterval(interval);
     };
-  }, []);
+  }, [fetchStaffData]);
 
   const handleSendInvite = async () => {
     const loadingToast = showLoading('Sending invite...', {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,16 +19,7 @@ function AcceptInviteContent() {
   const [isAccepting, setIsAccepting] = useState(false);
   const { showSuccess, showError } = useSnackbar();
 
-  useEffect(() => {
-    if (!token) {
-      router.push('/');
-      return;
-    }
-
-    fetchInvite();
-  }, [token, router]);
-
-  const fetchInvite = async () => {
+  const fetchInvite = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/staff/accept-invite?token=${token}`);
@@ -48,7 +39,16 @@ function AcceptInviteContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token, showError]);
+
+  useEffect(() => {
+    if (!token) {
+      router.push('/');
+      return;
+    }
+
+    fetchInvite();
+  }, [token, router, fetchInvite]);
 
   const handleAcceptInvite = async () => {
     if (!token) return;
