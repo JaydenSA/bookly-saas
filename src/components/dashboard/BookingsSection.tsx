@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,11 @@ export default function BookingsSection({ businessId }: BookingsSectionProps) {
   const [isLoading, setIsLoading] = useState(true);
   const { showSuccess, showError } = useSnackbar();
 
-  const fetchBookings = useCallback(async () => {
+  useEffect(() => {
+    fetchBookings();
+  }, [businessId]);
+
+  const fetchBookings = async () => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/bookings?businessId=${businessId}`);
@@ -44,11 +48,7 @@ export default function BookingsSection({ businessId }: BookingsSectionProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [businessId, showError]);
-
-  useEffect(() => {
-    fetchBookings();
-  }, [businessId, fetchBookings]);
+  };
 
   const getStatusBadge = (status: string) => {
     const variants = {

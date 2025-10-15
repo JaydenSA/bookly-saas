@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { MapPin, Phone, Mail, Globe, Clock, Percent, Building, ArrowLeft, Scissors, Search, Star, Package, Tag, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import Link from 'next/link';
