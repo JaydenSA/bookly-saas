@@ -1,7 +1,5 @@
 import dbConnect from '@/lib/mongodb';
 import Service from '@/models/Service';
-import Category from '@/models/Category';
-import Staff from '@/models/Staff';
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -11,13 +9,13 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     
     // Ensure models are registered
     if (!mongoose.models.Service) {
-      require('@/models/Service');
+      await import('@/models/Service');
     }
     if (!mongoose.models.Category) {
-      require('@/models/Category');
+      await import('@/models/Category');
     }
     if (!mongoose.models.Staff) {
-      require('@/models/Staff');
+      await import('@/models/Staff');
     }
     
     const { id } = await context.params;
@@ -47,7 +45,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       }, { status: 400 });
     }
     
-    const updated = await Service.findByIdAndUpdate(id, body, { new: true, runValidators: true })
+    const updated = await Service?.findByIdAndUpdate(id, body, { new: true, runValidators: true })
       .populate('categoryId', 'name color')
       .populate('staffIds', 'firstName lastName role');
     
@@ -74,11 +72,11 @@ export async function DELETE(_request: NextRequest, context: { params: Promise<{
     
     // Ensure models are registered
     if (!mongoose.models.Service) {
-      require('@/models/Service');
+      await import('@/models/Service');
     }
     
     const { id } = await context.params;
-    const result = await Service.deleteOne({ _id: id });
+    const result = await Service?.deleteOne({ _id: id });
     if (!result) return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
     return NextResponse.json({ success: true, data: {} }, { status: 200 });
   } catch (error) {

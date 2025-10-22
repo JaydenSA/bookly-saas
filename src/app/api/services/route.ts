@@ -1,7 +1,5 @@
 import dbConnect from '@/lib/mongodb';
 import Service from '@/models/Service';
-import Category from '@/models/Category';
-import Staff from '@/models/Staff';
 import mongoose from 'mongoose';
 import { NextResponse } from 'next/server';
 
@@ -12,15 +10,15 @@ export async function GET(request: Request) {
     // Ensure models are registered
     if (!mongoose.models.Service) {
       console.log('Service model not registered, importing...');
-      require('@/models/Service');
+      await import('@/models/Service');
     }
     if (!mongoose.models.Category) {
       console.log('Category model not registered, importing...');
-      require('@/models/Category');
+      await import('@/models/Category');
     }
     if (!mongoose.models.Staff) {
       console.log('Staff model not registered, importing...');
-      require('@/models/Staff');
+      await import('@/models/Staff');
     }
     
     const { searchParams } = new URL(request.url);
@@ -31,13 +29,13 @@ export async function GET(request: Request) {
     const filter = businessId ? { businessId } : {};
     console.log('[GET /api/services] filter:', filter);
     
-    const docs = await Service.find(filter)
+    const docs = await Service?.find(filter)
       .populate('categoryId', 'name color')
       .populate('staffIds', 'firstName lastName role')
       .sort({ createdAt: -1 });
     
-    console.log('[GET /api/services] found services:', docs.length);
-    return NextResponse.json({ services: docs }, { status: 200 });
+    console.log('[GET /api/services] found services:', docs?.length || 0);
+    return NextResponse.json({ services: docs || [] }, { status: 200 });
   } catch (error) {
     console.error('[GET /api/services] Error:', error);
     return NextResponse.json({ 
@@ -54,20 +52,24 @@ export async function POST(request: Request) {
     
     // Ensure models are registered
     if (!mongoose.models.Service) {
-      require('@/models/Service');
+      await import('@/models/Service');
     }
     if (!mongoose.models.Category) {
-      require('@/models/Category');
+      await import('@/models/Category');
     }
     if (!mongoose.models.Staff) {
-      require('@/models/Staff');
+      await import('@/models/Staff');
     }
     
     const body = await request.json();
-    const created = await Service.create(body);
+    const created = await Service?.create(body);
+    
+    if (!created) {
+      return NextResponse.json({ error: 'Failed to create service' }, { status: 500 });
+    }
     
     // Populate the category and staff information before returning
-    const populatedService = await Service.findById(created._id)
+    const populatedService = await Service?.findById(created._id)
       .populate('categoryId', 'name color')
       .populate('staffIds', 'firstName lastName role');
     

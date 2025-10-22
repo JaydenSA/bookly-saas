@@ -22,10 +22,10 @@ export default async function AdminPage() {
     const admin = (mongoose.connection as any).db.admin();
     const ping = await admin.command({ ping: 1 });
     pingOk = ping?.ok === 1;
-    userCount = await User.countDocuments();
-    businessCount = await Business.countDocuments();
-    serviceCount = await Service.countDocuments();
-    bookingCount = await Booking.countDocuments();
+    userCount = await User?.countDocuments() || 0;
+    businessCount = await Business?.countDocuments() || 0;
+    serviceCount = await Service?.countDocuments() || 0;
+    bookingCount = await Booking?.countDocuments() || 0;
   } catch (err: unknown) {
     errorMessage = err instanceof Error ? err.message : String(err);
   }

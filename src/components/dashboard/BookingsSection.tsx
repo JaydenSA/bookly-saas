@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,11 +40,7 @@ export default function BookingsSection({ businessId }: BookingsSectionProps) {
   const [dateFilter, setDateFilter] = useState<string>('all');
   const { showSuccess, showError } = useSnackbar();
 
-  useEffect(() => {
-    fetchBookings();
-  }, [businessId]);
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/bookings?businessId=${businessId}`);
@@ -60,7 +56,11 @@ export default function BookingsSection({ businessId }: BookingsSectionProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [businessId, showError]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [businessId, fetchBookings]);
 
   // Filter bookings based on search term and filters
   useEffect(() => {
@@ -133,7 +133,7 @@ export default function BookingsSection({ businessId }: BookingsSectionProps) {
       // Update the local state
       const updatedBookings = bookings.map(booking => 
         booking._id === bookingId 
-          ? { ...booking, status: newStatus as any }
+          ? { ...booking, status: newStatus as 'pending' | 'confirmed' | 'completed' | 'cancelled' }
           : booking
       );
       setBookings(updatedBookings);
@@ -316,7 +316,7 @@ export default function BookingsSection({ businessId }: BookingsSectionProps) {
             </div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">No Matching Bookings</h3>
             <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-6">
-              Try adjusting your search terms or filters to find what you're looking for.
+              Try adjusting your search terms or filters to find what you&apos;re looking for.
             </p>
             <Button
               variant="outline"

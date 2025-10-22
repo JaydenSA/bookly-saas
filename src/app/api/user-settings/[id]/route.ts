@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
     
     if (error || !dbUser) {
       return NextResponse.json(
@@ -45,7 +45,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
     
     if (error || !dbUser) {
       return NextResponse.json(
@@ -96,7 +96,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
     
     if (error || !dbUser) {
       return NextResponse.json(

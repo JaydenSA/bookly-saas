@@ -22,6 +22,7 @@ const BookingSettingsSchema = new Schema({
   blackoutDates: [{ type: String }],
 }, { timestamps: true });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let BookingSettingsModel = mongoose.models.BookingSettings as mongoose.Model<any> | undefined;
 
 if (!BookingSettingsModel) {

@@ -1,15 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useUser, SignInButton } from '@clerk/nextjs';
-import { Calendar, Clock, User, Check, Loader2, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
+import { Clock, User, Check, Loader2, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { Service, Staff } from '@/types';
@@ -49,7 +48,7 @@ export default function BookingDialog({
   const { showSuccess, showError, showLoading, dismiss } = useSnackbar();
 
   // Reset function to clear all state
-  const resetDialog = () => {
+  const resetDialog = useCallback(() => {
     setStep(user ? 'date' : 'auth');
     setSelectedDate(null);
     setSelectedStaff(null);
@@ -61,55 +60,15 @@ export default function BookingDialog({
     setIsLoadingStaff(false);
     setIsLoadingSlots(false);
     setIsSubmitting(false);
-  };
+  }, [user]);
 
-  // Reset dialog when it opens
-  useEffect(() => {
-    if (open) {
-      resetDialog();
-    }
-  }, [open]);
-
-  // Reset to auth step if user logs out
-  useEffect(() => {
-    if (isLoaded && !user && step !== 'auth') {
-      setStep('auth');
-    } else if (isLoaded && user && step === 'auth') {
-      setStep('date');
-    }
-  }, [user, isLoaded, step]);
-
-  // Fetch available staff when dialog opens
-  useEffect(() => {
-    if (open && businessId) {
-      console.log('BookingDialog opened with service:', service);
-      console.log('Service staffIds:', service.staffIds);
-      fetchAvailableStaff();
-    }
-  }, [open, businessId, service]);
-
-  // Fetch time slots when date and staff are selected
-  useEffect(() => {
-    if (selectedDate && selectedStaff) {
-      fetchAvailableTimeSlots();
-    }
-  }, [selectedDate, selectedStaff]);
-
-  const fetchAvailableStaff = async () => {
+  const fetchAvailableStaff = useCallback(async () => {
     setIsLoadingStaff(true);
     try {
       console.log('Fetching staff for businessId:', businessId, 'serviceId:', service._id);
       console.log('Service staffIds:', service.staffIds);
       
-      // If the service already has staffIds populated, use them directly
-      if (service.staffIds && service.staffIds.length > 0) {
-        console.log('Using service staffIds directly');
-        setAvailableStaff(service.staffIds);
-        setIsLoadingStaff(false);
-        return;
-      }
-      
-      // Fallback to API call if staffIds not populated
+      // Always use API call for consistency
       const response = await fetch(`/api/staff?businessId=${businessId}&serviceId=${service._id}`);
       console.log('Staff API response status:', response.status);
       
@@ -126,9 +85,9 @@ export default function BookingDialog({
     } finally {
       setIsLoadingStaff(false);
     }
-  };
+  }, [businessId, service]);
 
-  const fetchAvailableTimeSlots = async () => {
+  const fetchAvailableTimeSlots = useCallback(async () => {
     if (!selectedDate || !selectedStaff) return;
 
     setIsLoadingSlots(true);
@@ -151,7 +110,39 @@ export default function BookingDialog({
     } finally {
       setIsLoadingSlots(false);
     }
-  };
+  }, [selectedDate, selectedStaff, businessId, service.duration]);
+
+  // Reset dialog when it opens
+  useEffect(() => {
+    if (open) {
+      resetDialog();
+    }
+  }, [open, resetDialog]);
+
+  // Reset to auth step if user logs out
+  useEffect(() => {
+    if (isLoaded && !user && step !== 'auth') {
+      setStep('auth');
+    } else if (isLoaded && user && step === 'auth') {
+      setStep('date');
+    }
+  }, [user, isLoaded, step]);
+
+  // Fetch available staff when dialog opens
+  useEffect(() => {
+    if (open && businessId) {
+      console.log('BookingDialog opened with service:', service);
+      console.log('Service staffIds:', service.staffIds);
+      fetchAvailableStaff();
+    }
+  }, [open, businessId, service, fetchAvailableStaff]);
+
+  // Fetch time slots when date and staff are selected
+  useEffect(() => {
+    if (selectedDate && selectedStaff) {
+      fetchAvailableTimeSlots();
+    }
+  }, [selectedDate, selectedStaff, fetchAvailableTimeSlots]);
 
   const handleSubmit = async () => {
     if (!user || !selectedDate || !selectedStaff || !selectedTime) return;

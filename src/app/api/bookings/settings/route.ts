@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const businessId = searchParams.get('businessId');
     if (!businessId) return NextResponse.json({ error: 'businessId required' }, { status: 400 });
-    const settings = await BookingSettings.findOne({ businessId });
+    const settings = await BookingSettings?.findOne({ businessId });
     return NextResponse.json({ settings }, { status: 200 });
   } catch (error) {
     console.error('[GET /api/bookings/settings] Error:', error);
@@ -22,7 +22,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { businessId, ...rest } = body || {};
     if (!businessId) return NextResponse.json({ error: 'businessId required' }, { status: 400 });
-    const updated = await BookingSettings.findOneAndUpdate(
+    const updated = await BookingSettings?.findOneAndUpdate(
       { businessId },
       { businessId, ...rest },
       { new: true, upsert: true, runValidators: true }

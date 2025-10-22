@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Calendar, Clock, MapPin, User, Loader2, AlertCircle, CheckCircle, XCircle, Package } from 'lucide-react';
+import { Calendar, Clock, Loader2, CheckCircle, XCircle, Package } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

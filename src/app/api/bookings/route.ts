@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Service from '@/models/Service';
-import User from '@/models/User';
 import { getAuthenticatedUser } from '@/lib/auth';
 
 // Calculate end time based on start time and duration
@@ -46,7 +45,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
 
     if (error || !dbUser) {
       return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
@@ -65,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get service details for duration and price
-    const service = await Service.findById(serviceId);
+    const service = await Service?.findById(serviceId);
     if (!service) {
       return NextResponse.json(
         { error: 'Service not found' },

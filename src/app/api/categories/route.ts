@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
     
     if (error || !dbUser) {
       return NextResponse.json(

@@ -13,6 +13,7 @@ const ServiceSchema = new Schema({
   staffIds: [{ type: Schema.Types.ObjectId, ref: 'Staff' }],
 }, { timestamps: true });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let ServiceModel = mongoose.models.Service as mongoose.Model<any> | undefined;
 
 if (ServiceModel) {

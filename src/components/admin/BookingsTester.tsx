@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Client, Booking } from '@/types';
+import { Booking } from '@/types';
 
 export default function BookingsTester() {
   const [bookings, setBookings] = useState<Booking[]>([]);

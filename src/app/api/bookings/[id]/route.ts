@@ -5,7 +5,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
 
     if (error || !dbUser) {
       return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
@@ -45,7 +45,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 
 export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
 
     if (error || !dbUser) {
       return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });

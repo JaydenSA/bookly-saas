@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Business, WorkingHours } from '@/types';
+import { Business } from '@/types';
 
 export default function BusinessesTester() {
   const [businesses, setBusinesses] = useState<Business[]>([]);

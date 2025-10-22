@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
 import Staff from '@/models/Staff';
 import { getAuthenticatedUser } from '@/lib/auth';
 
@@ -8,7 +7,7 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
     
     if (error || !dbUser) {
       return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
@@ -38,7 +37,7 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
     
     if (error || !dbUser) {
       return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
@@ -79,7 +78,7 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
     
     if (error || !dbUser) {
       return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });

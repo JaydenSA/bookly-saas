@@ -1,9 +1,8 @@
 import { currentUser } from '@clerk/nextjs/server';
-import { NextRequest } from 'next/server';
 import User from '@/models/User';
 import { connectDB } from '@/lib/mongodb';
 
-export async function getAuthenticatedUser(request: NextRequest) {
+export async function getAuthenticatedUser() {
   try {
     await connectDB();
     

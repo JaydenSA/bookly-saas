@@ -75,17 +75,19 @@ export async function GET(request: NextRequest) {
     }).select('startTime endTime');
 
     // Pull booking settings (falls back to 09:00-17:00 and 30m interval)
-    const settings = await BookingSettings.findOne({ businessId }).lean();
+    const settings = await BookingSettings?.findOne({ businessId }).lean();
 
     const weekdayIdx = requestedDate.getDay(); // 0=Sun
-    const dayKey = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][weekdayIdx] as keyof NonNullable<typeof settings>;
+    const dayKey = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][weekdayIdx];
 
-    const dayConfig = settings?.days?.[dayKey as any] as undefined | { enabled?: boolean; open?: string; close?: string };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dayConfig = (settings as any)?.days?.[dayKey] as undefined | { enabled?: boolean; open?: string; close?: string };
     const enabled = dayConfig?.enabled ?? (weekdayIdx >= 1 && weekdayIdx <= 5);
 
     // Check blackout dates
     const dateISO = requestedDate.toISOString().split('T')[0];
-    const isBlackout = (settings?.blackoutDates || []).includes(dateISO);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isBlackout = ((settings as any)?.blackoutDates || []).includes(dateISO);
     if (!enabled || isBlackout) {
       return NextResponse.json({ timeSlots: [] }, { status: 200 });
     }
@@ -94,7 +96,8 @@ export async function GET(request: NextRequest) {
     const close = dayConfig?.close || '17:00';
     // Use service duration as slot interval instead of fixed setting
     const interval = duration;
-    const lead = settings?.leadTimeMinutes || 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lead = (settings as any)?.leadTimeMinutes || 0;
 
     // Generate all possible time slots from settings
     const allSlots = generateTimeSlotsFromSettings(open, close, interval);
@@ -107,16 +110,16 @@ export async function GET(request: NextRequest) {
     const timeSlots = allSlots.map((startTime) => {
       const endTime = calculateEndTime(startTime, duration);
       const slotStartMin = startOfDayMin + toMinutes(startTime);
-      
+
       // For today: check if slot is after now + lead time
       // For future days: all slots are available (no lead time restriction)
       const isToday = requestedDate.toDateString() === now.toDateString();
-      const isAfterLead = isToday ? 
-        slotStartMin >= Math.ceil((now.getTime() + lead * 60000) / 60000) : 
+      const isAfterLead = isToday ?
+        slotStartMin >= Math.ceil((now.getTime() + lead * 60000) / 60000) :
         true;
 
       // Check if this slot overlaps with any existing booking
-      const isAvailable = isAfterLead && !existingBookings.some((booking) => {
+      const isAvailable = isAfterLead && !existingBookings.some((booking: { startTime: string; endTime: string }) => {
         return timesOverlap(startTime, endTime, booking.startTime, booking.endTime);
       });
 

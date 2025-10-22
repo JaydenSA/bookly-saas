@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import { Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,7 +20,7 @@ export default function ImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { showSuccess, showError, showLoading, dismiss } = useSnackbar();
 
-  const handleUpload = async (files: FileList) => {
+  const handleUpload = useCallback(async (files: FileList) => {
     if (images.length + files.length > maxImages) {
       showError(`You can only upload up to ${maxImages} images`);
       return;
@@ -73,7 +74,7 @@ export default function ImageUpload({
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [images, maxImages, onImagesChange, showError, showSuccess, showLoading, dismiss]);
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -179,10 +180,11 @@ export default function ImageUpload({
             <Card key={index} className="relative group">
               <CardContent className="p-2">
                 <div className="aspect-square relative rounded-md overflow-hidden">
-                  <img
+                  <Image
                     src={imageUrl}
                     alt={`Upload ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                   <Button
                     variant="destructive"

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Category from '@/models/Category';
 import Service from '@/models/Service';
-import User from '@/models/User';
 import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function GET(
@@ -37,7 +36,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
     
     if (error || !dbUser) {
       return NextResponse.json(
@@ -103,7 +102,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
     
     if (error || !dbUser) {
       return NextResponse.json(
@@ -125,11 +124,11 @@ export async function DELETE(
     }
 
     // Check if any services are using this category
-    const servicesUsingCategory = await Service.countDocuments({ 
+    const servicesUsingCategory = await Service?.countDocuments({ 
       categoryId: id 
     });
 
-    if (servicesUsingCategory > 0) {
+    if ((servicesUsingCategory || 0) > 0) {
       return NextResponse.json(
         { 
           error: 'Cannot delete category', 

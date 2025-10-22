@@ -210,36 +210,6 @@ export default function StaffSection({ businessId }: StaffSectionProps) {
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const uploadToast = showLoading('Uploading image...');
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to upload image');
-      }
-
-      const data = await response.json();
-      setFormData(prev => ({ ...prev, imageUrl: data.url }));
-      dismiss(uploadToast);
-      showSuccess('Image uploaded!', { description: 'Profile picture updated.' });
-    } catch (error) {
-      dismiss(uploadToast);
-      showError('Image upload failed', {
-        description: error instanceof Error ? error.message : 'Please try again.',
-      });
-    }
-  };
 
   const getInitials = (firstName: string, lastName: string) => {
     const first = firstName?.[0] || '';

@@ -14,15 +14,16 @@ async function populateDatabase() {
 
     // Clear existing data
     console.log('Clearing existing data...');
-    await User.deleteMany({});
-    await Business.deleteMany({});
-    await Service.deleteMany({});
-    await Booking.deleteMany({});
-    await Payment.deleteMany({});
-    await TestDoc.deleteMany({});
+    if (User) await User.deleteMany({});
+    if (Business) await Business.deleteMany({});
+    if (Service) await Service.deleteMany({});
+    if (Booking) await Booking.deleteMany({});
+    if (Payment) await Payment.deleteMany({});
+    if (TestDoc) await TestDoc.deleteMany({});
 
     // Create sample users
     console.log('Creating users...');
+    if (!User) throw new Error('User model not available');
     const users = await User.insertMany([
       {
         kindeUserId: 'kinde_user_001',
@@ -56,6 +57,7 @@ async function populateDatabase() {
 
     // Create sample businesses
     console.log('Creating businesses...');
+    if (!Business) throw new Error('Business model not available');
     const businesses = await Business.insertMany([
       {
         name: 'Elite Hair Salon',
@@ -107,6 +109,7 @@ async function populateDatabase() {
 
     // Create sample services
     console.log('Creating services...');
+    if (!Service) throw new Error('Service model not available');
     const services = await Service.insertMany([
       // Elite Hair Salon services
       {
@@ -162,6 +165,7 @@ async function populateDatabase() {
 
     // Create sample bookings
     console.log('Creating bookings...');
+    if (!Booking) throw new Error('Booking model not available');
     const bookings = await Booking.insertMany([
       {
         businessId: businesses[0]._id,
@@ -246,6 +250,7 @@ async function populateDatabase() {
 
     // Create sample payments
     console.log('Creating payments...');
+    if (!Payment) throw new Error('Payment model not available');
     await Payment.insertMany([
       {
         bookingId: bookings[0]._id,
@@ -283,6 +288,7 @@ async function populateDatabase() {
 
     // Create sample test documents
     console.log('Creating test documents...');
+    if (!TestDoc) throw new Error('TestDoc model not available');
     await TestDoc.insertMany([
       {
         title: 'Database Connection Test',

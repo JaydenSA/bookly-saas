@@ -4,9 +4,9 @@ import UserSettings from '@/models/UserSettings';
 import User from '@/models/User';
 import { getAuthenticatedUser } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
     
     if (error || !dbUser) {
       return NextResponse.json(
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { user: dbUser, error } = await getAuthenticatedUser(request);
+    const { user: dbUser, error } = await getAuthenticatedUser();
     
     if (error || !dbUser) {
       return NextResponse.json(

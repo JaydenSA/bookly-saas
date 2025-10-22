@@ -10,11 +10,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import {
   User,
-  Mail,
-  Phone,
   Bell,
   Shield,
-  Palette,
   CreditCard,
   Key,
   Trash2,
@@ -30,7 +27,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { useSnackbar } from '@/hooks/useSnackbar';
-import { UserData, UserSettings, UserSettingsFormData } from '@/types';
+import { UserData, UserSettings } from '@/types';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { SignOutButton } from '@clerk/nextjs';
 
@@ -40,7 +37,7 @@ interface SettingsSectionProps {
 }
 
 export default function SettingsSection({ userData, onUserUpdate }: SettingsSectionProps) {
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   // Removed isEditing state - general tab is always editable
   const [activeTab, setActiveTab] = useState<'general' | 'notifications' | 'security' | 'billing'>('general');
   const [editForm, setEditForm] = useState({
@@ -50,7 +47,13 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
   });
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
-  const [bookingSettings, setBookingSettings] = useState<any | null>(null);
+  const [bookingSettings, setBookingSettings] = useState<{
+    businessId: string;
+    slotIntervalMinutes: number;
+    leadTimeMinutes: number;
+    days: Record<string, { enabled: boolean; open: string; close: string }>;
+    blackoutDates: string[];
+  } | null>(null);
   const [isLoadingBookingSettings, setIsLoadingBookingSettings] = useState(false);
   const [isSavingBookingSettings, setIsSavingBookingSettings] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
@@ -116,7 +119,7 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
     fetchBookingSettings();
   }, [userData.businessId]);
 
-  const updateDayField = (dayKey: string, field: 'enabled' | 'open' | 'close', value: any) => {
+  const updateDayField = (dayKey: string, field: 'enabled' | 'open' | 'close', value: boolean | string) => {
     if (!bookingSettings) return;
     setBookingSettings({
       ...bookingSettings,
@@ -157,12 +160,6 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
     }
   };
 
-  const handleThemeChange = (newTheme: string) => {
-    setTheme(newTheme);
-    showSuccess('Theme updated!', {
-      description: `Switched to ${newTheme} theme`,
-    });
-  };
 
   const handleSaveProfile = async () => {
     const loadingToast = showLoading('Updating profile...', {
@@ -266,52 +263,6 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
     }
   };
 
-  const handleSaveAppearance = async (appearance: UserSettings['appearance']) => {
-    const loadingToast = showLoading('Saving appearance settings...', {
-      description: 'Updating your preferences',
-    });
-
-    try {
-      const response = await fetch('/api/user-settings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          notifications: userSettings?.notifications || {
-            email: true,
-            sms: false,
-            push: true,
-            marketing: false,
-          },
-          appearance,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save appearance settings');
-      }
-
-      const data = await response.json();
-      setUserSettings(data.userSettings);
-      
-      // Update theme in the theme provider
-      if (appearance.theme) {
-        setTheme(appearance.theme);
-      }
-      
-      dismiss(loadingToast);
-      showSuccess('Appearance settings saved!', {
-        description: 'Your preferences have been updated',
-      });
-    } catch (error) {
-      console.error('Error saving appearance settings:', error);
-      dismiss(loadingToast);
-      showError('Failed to save appearance settings', {
-        description: 'Please try again',
-      });
-    }
-  };
 
   const tabs = [
     { id: 'general', label: 'General', icon: User },
