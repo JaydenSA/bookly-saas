@@ -6,25 +6,57 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
 
-    const { kindeUserId, name, email } = await request.json();
+    const { clerkUserId, name, email } = await request.json();
 
-    if (!kindeUserId || !name || !email) {
+    if (!clerkUserId || !name || !email) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Check if user already exists
-    let user = await User.findOne({ kindeUserId });
+    // First, try to find by clerkUserId (for already migrated users)
+    let user = await User.findOne({ clerkUserId });
+
+    // If not found by clerkUserId, try to find by email
+    // This handles existing users who migrated from Kinde
+    if (!user) {
+      user = await User.findOne({ email });
+      
+      if (user) {
+        // Found existing user by email - update their clerkUserId
+        console.log(`Updating Clerk ID for existing user: ${email}`);
+        console.log(`  Old ID: ${user.clerkUserId}`);
+        console.log(`  New ID: ${clerkUserId}`);
+        
+        user.clerkUserId = clerkUserId; // Update to new Clerk ID
+        await user.save();
+        
+        return NextResponse.json({
+          success: true,
+          user: {
+            id: user._id,
+            clerkUserId: user.clerkUserId,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            plan: user.plan,
+            businessId: user.businessId,
+            phone: user.phone,
+            createdAt: user.createdAt,
+          },
+          message: 'User found and updated with new Clerk ID'
+        });
+      }
+    }
 
     if (user) {
-      // User exists, return user data
+      // User exists with correct clerkUserId
       return NextResponse.json({
         success: true,
         user: {
           id: user._id,
-          kindeUserId: user.kindeUserId,
+          clerkUserId: user.clerkUserId,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -39,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     // Create new user
     user = new User({
-      kindeUserId,
+      clerkUserId,
       name,
       email,
       role: 'owner', // Default role for new signups
@@ -52,7 +84,7 @@ export async function POST(request: NextRequest) {
       success: true,
       user: {
         id: user._id,
-        kindeUserId: user.kindeUserId,
+        clerkUserId: user.clerkUserId,
         name: user.name,
         email: user.email,
         role: user.role,

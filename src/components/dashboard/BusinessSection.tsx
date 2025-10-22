@@ -288,7 +288,7 @@ export default function BusinessSection({ userId }: BusinessSectionProps) {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className='mb-8'>
         <CardHeader>
           <CardTitle className="flex items-center">
             <Building className="h-5 w-5 mr-2" />

@@ -3,7 +3,7 @@ import { connectDB } from '@/lib/mongodb';
 import Category from '@/models/Category';
 import Service from '@/models/Service';
 import User from '@/models/User';
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
@@ -37,12 +37,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const { user: dbUser, error } = await getAuthenticatedUser(request);
     
-    if (!user) {
+    if (error || !dbUser) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
@@ -104,12 +103,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const { user: dbUser, error } = await getAuthenticatedUser(request);
     
-    if (!user) {
+    if (error || !dbUser) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: error || 'Unauthorized' },
         { status: 401 }
       );
     }

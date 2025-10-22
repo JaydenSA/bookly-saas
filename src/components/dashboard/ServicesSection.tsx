@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Edit2, Trash2, Clock, DollarSign, Scissors, Tag } from 'lucide-react';
+import { Plus, Edit2, Trash2, Clock, DollarSign, Scissors, Tag, Users, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,26 +10,29 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { usePermissions } from '@/hooks/usePermissions';
-import { Service, ServicesSectionProps, Category } from '@/types';
+import { Service, ServicesSectionProps, Category, Staff, ServiceFormData } from '@/types';
 
 export default function ServicesSection({ businessId }: ServicesSectionProps) {
   const { canManageServices } = usePermissions();
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [staff, setStaff] = useState<Staff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ServiceFormData>({
     name: '',
     description: '',
     duration: 30,
     price: 0,
     categoryId: '',
+    staffIds: [],
   });
   const { showSuccess, showError, showLoading, dismiss } = useSnackbar();
 
@@ -73,12 +76,25 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
     }
   }, [businessId]);
 
+  const fetchStaff = useCallback(async () => {
+    try {
+      const response = await fetch('/api/staff');
+      if (response.ok) {
+        const data = await response.json();
+        setStaff(data.staffMembers || data.staff || []);
+      }
+    } catch (err) {
+      console.error('Error fetching staff:', err);
+    }
+  }, []);
+
   useEffect(() => {
     if (businessId) {
       fetchServices();
       fetchCategories();
+      fetchStaff();
     }
-  }, [businessId, fetchServices, fetchCategories]);
+  }, [businessId, fetchServices, fetchCategories, fetchStaff]);
 
   const resetForm = () => {
     setFormData({
@@ -87,8 +103,18 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
       duration: 30,
       price: 0,
       categoryId: '',
+      staffIds: [],
     });
     setEditingService(null);
+  };
+
+  const handleStaffToggle = (staffId: string) => {
+    setFormData(prev => {
+      const newStaffIds = prev.staffIds.includes(staffId)
+        ? prev.staffIds.filter(id => id !== staffId)
+        : [...prev.staffIds, staffId];
+      return { ...prev, staffIds: newStaffIds };
+    });
   };
 
   const handleCreateService = async () => {
@@ -98,11 +124,19 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
 
     try {
       setIsCreating(true);
+      
+      // Clean up the data before sending - remove empty strings and ensure proper types
       const serviceData = {
         ...formData,
         businessId,
         isActive: true,
+        categoryId: formData.categoryId || undefined,
+        staffIds: formData.staffIds || [],
+        duration: Number(formData.duration),
+        price: Number(formData.price),
       };
+
+      console.log('Creating service with data:', serviceData);
 
       const response = await fetch('/api/services', {
         method: 'POST',
@@ -144,16 +178,29 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
 
     try {
       setIsUpdating(serviceId);
+      
+      // Clean up the data before sending - remove empty strings and ensure proper types
+      const cleanedData = {
+        ...formData,
+        categoryId: formData.categoryId || undefined,
+        staffIds: formData.staffIds || [],
+        duration: Number(formData.duration),
+        price: Number(formData.price),
+      };
+      
+      console.log('Updating service with cleaned data:', cleanedData);
+      
       const response = await fetch(`/api/services/${serviceId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(cleanedData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Service update failed:', errorData);
         throw new Error(errorData.message || 'Failed to update service');
       }
 
@@ -220,6 +267,7 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
       duration: service.duration,
       price: service.price,
       categoryId: typeof service.categoryId === 'object' ? service.categoryId._id : (service.categoryId || ''),
+      staffIds: service.staffIds?.map((s: string | { _id: string }) => (typeof s === 'string' ? s : s._id)) || [],
     });
     setIsDialogOpen(true);
   };
@@ -333,6 +381,31 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label>Assigned Staff</Label>
+                  {staff.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No staff members available. Add staff first.</p>
+                  ) : (
+                    <div className="max-h-48 overflow-y-auto space-y-2 border rounded-lg p-3">
+                      {staff.map(staffMember => (
+                        <div key={staffMember._id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`staff-${staffMember._id}`}
+                            checked={formData.staffIds.includes(staffMember._id)}
+                            onCheckedChange={() => handleStaffToggle(staffMember._id)}
+                          />
+                          <Label htmlFor={`staff-${staffMember._id}`} className="font-normal flex-1 cursor-pointer">
+                            {staffMember.firstName} {staffMember.lastName}
+                            {staffMember.role && <span className="text-muted-foreground ml-2">({staffMember.role})</span>}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Select which staff members can perform this service
+                  </p>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="duration">Duration (minutes)</Label>
@@ -436,6 +509,22 @@ export default function ServicesSection({ businessId }: ServicesSectionProps) {
                       {formatPrice(service?.price || 0)}
                     </div>
                   </div>
+                  {service?.staffIds && service.staffIds.length > 0 && (
+                    <div className="flex items-start flex-wrap gap-1 pt-2 border-t mt-2">
+                      <Users className="mr-2 h-4 w-4 flex-shrink-0" />
+                      <div className="flex flex-wrap gap-1">
+                        {service.staffIds.map((staffMember: string | { _id: string; firstName: string; lastName: string; role?: string }) => {
+                          if (typeof staffMember === 'string') return null;
+                          return (
+                            <Badge key={staffMember._id} variant="secondary" className="text-xs">
+                              {staffMember.firstName} {staffMember.lastName}
+                              {staffMember.role && <span className="ml-1">({staffMember.role})</span>}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 {canManageServices && (
                   <div className="flex items-center gap-2 flex-col md:flex-row">

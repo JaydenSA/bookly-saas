@@ -14,7 +14,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       success: true, 
       user: {
         id: updated._id,
-        kindeUserId: updated.kindeUserId,
+        clerkUserId: updated.clerkUserId,
         name: updated.name,
         email: updated.email,
         role: updated.role,

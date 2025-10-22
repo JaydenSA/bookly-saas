@@ -1,53 +1,52 @@
 // Staff-related types and interfaces
 
-export interface StaffPermissions {
-  canManageServices: boolean;
-  canManageBookings: boolean;
-  canManageCustomers: boolean;
-  canViewReports: boolean;
-  canManageStaff: boolean;
-  canManageBusiness: boolean;
-}
-
-export interface StaffInvite {
+export interface Staff {
   _id: string;
   businessId: string;
-  invitedBy: string;
-  email: string;
-  role: 'staff';
-  permissions: StaffPermissions;
-  status: 'pending' | 'accepted' | 'declined' | 'expired';
-  token: string;
-  expiresAt: string;
-  acceptedAt?: string;
-  declinedAt?: string;
-  acceptedBy?: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  role?: string;
+  bio?: string;
+  imageUrl?: string;
+  isActive: boolean;
+  serviceIds: Array<string | { _id: string; name: string }>;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface StaffMember {
-  _id: string;
-  kindeUserId: string;
-  name: string;
+export interface CreateStaffData {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  role?: string;
+  bio?: string;
+  imageUrl?: string;
+  serviceIds?: string[];
+}
+
+export interface UpdateStaffData {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  role?: string;
+  bio?: string;
+  imageUrl?: string;
+  isActive?: boolean;
+  serviceIds?: string[];
+}
+
+export interface StaffFormData {
+  firstName: string;
+  lastName: string;
   email: string;
-  role: 'staff';
-  businessId: string;
-  permissions: StaffPermissions;
-  isActive: boolean;
-  createdAt: string;
+  phone: string;
+  role: string;
+  bio: string;
+  imageUrl: string;
+  serviceIds: string[];
 }
 
-export interface CreateStaffInviteData {
-  email: string;
-  permissions: StaffPermissions;
-}
-
-export interface UpdateStaffPermissionsData {
-  permissions: StaffPermissions;
-}
-
-export interface StaffInviteResponse {
-  invite: StaffInvite;
-  inviteUrl: string;
-}

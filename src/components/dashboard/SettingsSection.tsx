@@ -31,9 +31,8 @@ import {
 } from 'lucide-react';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { UserData, UserSettings, UserSettingsFormData } from '@/types';
-import { useKindeAuth } from '@kinde-oss/kinde-auth-nextjs';
-import { LogoutLink } from '@kinde-oss/kinde-auth-nextjs/components';
 import { useTheme } from '@/components/providers/ThemeProvider';
+import { SignOutButton } from '@clerk/nextjs';
 
 interface SettingsSectionProps {
   userData: UserData;
@@ -51,6 +50,9 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
   });
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+  const [bookingSettings, setBookingSettings] = useState<any | null>(null);
+  const [isLoadingBookingSettings, setIsLoadingBookingSettings] = useState(false);
+  const [isSavingBookingSettings, setIsSavingBookingSettings] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const { showSuccess, showError, showLoading, dismiss } = useSnackbar();
 
@@ -75,6 +77,85 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
 
     fetchUserSettings();
   }, []);
+
+  // Load booking settings for this business
+  useEffect(() => {
+    const fetchBookingSettings = async () => {
+      if (!userData.businessId) return;
+      try {
+        setIsLoadingBookingSettings(true);
+        const res = await fetch(`/api/bookings/settings?businessId=${userData.businessId}`);
+        if (res.ok) {
+          const data = await res.json();
+          // fallback defaults if none exist yet
+          setBookingSettings(
+            data.settings || {
+              businessId: userData.businessId,
+              slotIntervalMinutes: 30,
+              leadTimeMinutes: 0,
+              days: {
+                sunday: { enabled: false, open: '09:00', close: '17:00' },
+                monday: { enabled: true, open: '09:00', close: '17:00' },
+                tuesday: { enabled: true, open: '09:00', close: '17:00' },
+                wednesday: { enabled: true, open: '09:00', close: '17:00' },
+                thursday: { enabled: true, open: '09:00', close: '17:00' },
+                friday: { enabled: true, open: '09:00', close: '17:00' },
+                saturday: { enabled: false, open: '09:00', close: '17:00' },
+              },
+              blackoutDates: [],
+            }
+          );
+        }
+      } catch (e) {
+        console.error('Error fetching booking settings', e);
+      } finally {
+        setIsLoadingBookingSettings(false);
+      }
+    };
+
+    fetchBookingSettings();
+  }, [userData.businessId]);
+
+  const updateDayField = (dayKey: string, field: 'enabled' | 'open' | 'close', value: any) => {
+    if (!bookingSettings) return;
+    setBookingSettings({
+      ...bookingSettings,
+      days: {
+        ...bookingSettings.days,
+        [dayKey]: {
+          ...bookingSettings.days?.[dayKey],
+          [field]: value,
+        },
+      },
+    });
+  };
+
+  const saveBookingSettings = async () => {
+    if (!bookingSettings || !userData.businessId) return;
+    const loading = showLoading('Saving booking settings...', { description: 'Updating availability configuration' });
+    try {
+      setIsSavingBookingSettings(true);
+      const res = await fetch('/api/bookings/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...bookingSettings, businessId: userData.businessId }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to save booking settings');
+      }
+      const data = await res.json();
+      setBookingSettings(data.settings);
+      dismiss(loading);
+      showSuccess('Booking settings saved!', { description: 'Customers will now see updated times' });
+    } catch (e) {
+      console.error('Save booking settings error', e);
+      dismiss(loading);
+      showError('Failed to save booking settings', { description: e instanceof Error ? e.message : 'Please try again' });
+    } finally {
+      setIsSavingBookingSettings(false);
+    }
+  };
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
@@ -367,6 +448,89 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
                     </Button>
                   </div>
                 </div>
+
+                {userData.businessId && (
+                  <div className="mt-8 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      <h3 className="text-lg font-semibold">Booking Settings</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Configure business hours and slot rules that power the booking calendar.</p>
+
+                    {isLoadingBookingSettings || !bookingSettings ? (
+                      <div className="text-sm text-muted-foreground">Loading booking settings...</div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="settings-form-field">
+                            <Label htmlFor="slotInterval">Slot Interval (minutes)</Label>
+                            <Input
+                              id="slotInterval"
+                              type="number"
+                              min={5}
+                              step={5}
+                              value={bookingSettings.slotIntervalMinutes}
+                              onChange={(e) => setBookingSettings({ ...bookingSettings, slotIntervalMinutes: Math.max(5, parseInt(e.target.value) || 5) })}
+                            />
+                          </div>
+                          <div className="settings-form-field">
+                            <Label htmlFor="leadTime">Lead Time (minutes)</Label>
+                            <Input
+                              id="leadTime"
+                              type="number"
+                              min={0}
+                              step={5}
+                              value={bookingSettings.leadTimeMinutes}
+                              onChange={(e) => setBookingSettings({ ...bookingSettings, leadTimeMinutes: Math.max(0, parseInt(e.target.value) || 0) })}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {['monday','tuesday','wednesday','thursday','friday','saturday','sunday'].map((day) => (
+                            <div key={day} className="p-4 border rounded-lg">
+                              <div className="flex items-center justify-between">
+                                <Label className="capitalize">{day}</Label>
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="text-muted-foreground">Enabled</span>
+                                  <Switch
+                                    checked={Boolean(bookingSettings.days?.[day]?.enabled)}
+                                    onCheckedChange={(checked) => updateDayField(day, 'enabled', checked)}
+                                  />
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3 mt-3">
+                                <div>
+                                  <Label className="text-xs">Open</Label>
+                                  <Input
+                                    type="time"
+                                    value={bookingSettings.days?.[day]?.open || '09:00'}
+                                    onChange={(e) => updateDayField(day, 'open', e.target.value)}
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Close</Label>
+                                  <Input
+                                    type="time"
+                                    value={bookingSettings.days?.[day]?.close || '17:00'}
+                                    onChange={(e) => updateDayField(day, 'close', e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="settings-form-actions">
+                          <Button onClick={saveBookingSettings} disabled={isSavingBookingSettings} className="flex items-center">
+                            <Save className="h-4 w-4 mr-1" />
+                            {isSavingBookingSettings ? 'Saving...' : 'Save Booking Settings'}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -506,12 +670,12 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
                       </Label>
                       <p className="settings-switch-description">Log out of all devices and sessions</p>
                     </div>
-                    <LogoutLink>
+                    <SignOutButton>
                       <Button variant="outline" size="sm" onClick={handleLogoutAllSessions}>
                         <LogOut className="h-4 w-4 mr-1" />
                         Logout All
                       </Button>
-                    </LogoutLink>
+                    </SignOutButton>
                   </div>
                   
                   <Separator className="settings-separator" />

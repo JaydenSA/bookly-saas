@@ -1,0 +1,27 @@
+# Clerk Environment Variables
+# Get these from your Clerk Dashboard: https://dashboard.clerk.com/
+
+# Required - Your Clerk publishable key
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+
+# Required - Your Clerk secret key  
+CLERK_SECRET_KEY=sk_test_your_secret_key_here
+
+# Optional - Sign-in URL (defaults to /sign-in)
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+
+# Optional - Sign-up URL (defaults to /sign-up)
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+
+# Optional - After sign-in redirect URL
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+
+# Optional - After sign-up redirect URL  
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/welcome
+
+# Optional - After sign-out redirect URL
+NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL=/
+
+# Database Configuration
+MONGODB_URI=mongodb://localhost:27017/booking-system
+

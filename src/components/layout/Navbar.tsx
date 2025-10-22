@@ -1,17 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { LoginLink, RegisterLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
-import { useKindeAuth } from "@kinde-oss/kinde-auth-nextjs";
+import { useUser, SignInButton, SignOutButton } from "@clerk/nextjs";
 import { LogOut, Sun, Moon, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/providers/ThemeProvider";
-import NotificationBell from "@/components/NotificationBell";
 
 export default function Navbar() {
-  const { user, isAuthenticated, isLoading } = useKindeAuth();
+  const { user, isLoaded } = useUser();
   const { theme, setTheme } = useTheme();
 
   const toggleTheme = () => {
@@ -57,24 +55,21 @@ export default function Navbar() {
         </nav>
 
           {/* Right actions */}
-          {isLoading ? (
+          {!isLoaded ? (
             <div className="navbar-loading">Loading...</div>
-          ) : isAuthenticated && user ? (
+          ) : user ? (
             <div className="navbar-actions">
               <div className="navbar-user-info">
                 <Avatar className="h-9 w-9">
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user.given_name?.[0] || user.family_name?.[0] || user.email?.[0] || "U"}
+                    {user.firstName?.[0] || user.lastName?.[0] || user.emailAddresses[0]?.emailAddress?.[0] || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="navbar-user-details">
-                  <div className="navbar-user-name">{user.given_name || user.email}</div>
-                  <div className="navbar-user-email">{user.email}</div>
+                  <div className="navbar-user-name">{user.firstName || user.emailAddresses[0]?.emailAddress}</div>
+                  <div className="navbar-user-email">{user.emailAddresses[0]?.emailAddress}</div>
                 </div>
               </div>
-              
-              {/* Notification Bell */}
-              <NotificationBell />
               
               {/* Theme Toggle */}
               <Button variant="ghost" size="icon" onClick={toggleTheme} title={`Current theme: ${theme}`}>
@@ -88,10 +83,10 @@ export default function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <LogoutLink className="w-full cursor-pointer">
-                      Log out
-                    </LogoutLink>
+                  <DropdownMenuItem>
+                    <SignOutButton>
+                      <span className="w-full cursor-pointer">Log out</span>
+                    </SignOutButton>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -103,12 +98,16 @@ export default function Navbar() {
                 {getThemeIcon()}
               </Button>
               
-              <Button variant="ghost" asChild>
-                <LoginLink postLoginRedirectURL="/dashboard">Sign in</LoginLink>
-              </Button>
-              <Button asChild>
-                <RegisterLink postLoginRedirectURL="/welcome">Sign up</RegisterLink>
-              </Button>
+              <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+                <Button variant="ghost">
+                  Sign in
+                </Button>
+              </SignInButton>
+              <SignInButton mode="modal" fallbackRedirectUrl="/welcome">
+                <Button>
+                  Sign up
+                </Button>
+              </SignInButton>
             </div>
           )}
       </div>

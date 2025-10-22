@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useKindeAuth } from '@kinde-oss/kinde-auth-nextjs';
+import { useUser } from '@clerk/nextjs';
 import { Loader2, User, Mail, Phone, Building, Crown, Calendar, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,33 +14,22 @@ import ServicesSection from '@/components/dashboard/ServicesSection';
 import CategoriesSection from '@/components/dashboard/CategoriesSection';
 import StaffSection from '@/components/dashboard/StaffSection';
 import BookingsSection from '@/components/dashboard/BookingsSection';
+import MyBookingsSection from '@/components/dashboard/MyBookingsSection';
 import SettingsSection from '@/components/dashboard/SettingsSection';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { usePermissions } from '@/hooks/usePermissions';
 
 export default function DashboardPage() {
-  const { isAuthenticated, isLoading } = useKindeAuth();
+  const { user, isLoaded } = useUser();
   const { 
     canManageServices, 
     canManageBusiness, 
     canManageBookings,
     canManageCustomers,
     canViewReports,
-    canManageStaff,
     isLoadingPermissions,
     userData: permissionsUserData
   } = usePermissions();
-
-  // Debug permissions
-  console.log('Dashboard - Permissions:', {
-    canManageServices,
-    canManageBusiness,
-    canManageBookings,
-    canManageCustomers,
-    canViewReports,
-    canManageStaff,
-    permissionsUserData
-  });
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [activeSection, setActiveSection] = useState<'overview' | 'settings'>('overview');
@@ -52,13 +41,19 @@ export default function DashboardPage() {
 
   // Use userData from usePermissions hook instead of fetching separately
   const userData = permissionsUserData;
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('Dashboard userData:', userData);
+    console.log('Dashboard businessId:', userData?.businessId);
+  }, [userData]);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isLoaded && !user) {
       router.push('/');
       return;
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoaded, user, router]);
 
   useEffect(() => {
     if (userData) {
@@ -109,7 +104,7 @@ export default function DashboardPage() {
 
 
 
-  if (isLoading || isLoadingPermissions) {
+  if (!isLoaded || isLoadingPermissions) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -311,14 +306,19 @@ export default function DashboardPage() {
           <ServicesSection businessId={userData.businessId} />
         )}
 
-        {/* Staff Section - Only show for owners with a business */}
-        {!isLoadingPermissions && userData.businessId && userData.role === 'owner' && (
+        {/* Staff Section - Only show if user has a business and can manage services */}
+        {!isLoadingPermissions && userData.businessId && canManageServices && (
           <StaffSection businessId={userData.businessId} />
         )}
 
         {/* Bookings Section - Show for users who can manage bookings */}
         {!isLoadingPermissions && userData.businessId && canManageBookings && (
           <BookingsSection businessId={userData.businessId} />
+        )}
+
+        {/* My Bookings Section - Show for all users to see their own bookings */}
+        {!isLoadingPermissions && userData && (
+          <MyBookingsSection userId={userData.id} />
         )}
 
         {/* No Access Message - Show for staff members with no permissions */}
@@ -328,8 +328,7 @@ export default function DashboardPage() {
          !canManageBookings && 
          !canManageBusiness && 
          !canManageCustomers && 
-         !canViewReports && 
-         !canManageStaff && (
+         !canViewReports && (
           <Card>
             <CardHeader>
               <CardTitle>Limited Access</CardTitle>

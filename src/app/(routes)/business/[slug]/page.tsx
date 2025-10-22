@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import Link from 'next/link';
+import BookingDialog from '@/components/booking/BookingDialog';
 import { Business, Service, Category } from '@/types';
 
 export default function BusinessPage() {
@@ -22,7 +23,14 @@ export default function BusinessPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [serviceSearchQuery, setServiceSearchQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const { showError } = useSnackbar();
+
+  const handleBookService = (service: Service) => {
+    setSelectedService(service);
+    setBookingDialogOpen(true);
+  };
 
   useEffect(() => {
     const fetchBusinessAndServices = async () => {
@@ -436,7 +444,11 @@ export default function BusinessPage() {
                               <span className="text-lg font-semibold text-gray-900 dark:text-white">
                                 R{service.price.toFixed(2)}
                               </span>
-                              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                              <Button 
+                                size="sm" 
+                                className="bg-blue-600 hover:bg-blue-700"
+                                onClick={() => handleBookService(service)}
+                              >
                                 Book
                               </Button>
                             </div>
@@ -472,6 +484,17 @@ export default function BusinessPage() {
           
         </div>
       </div>
+
+      {/* Booking Dialog */}
+      {selectedService && business && (
+        <BookingDialog
+          open={bookingDialogOpen}
+          onOpenChange={setBookingDialogOpen}
+          service={selectedService}
+          businessId={business._id}
+          businessName={business.name}
+        />
+      )}
     </div>
   );
 }

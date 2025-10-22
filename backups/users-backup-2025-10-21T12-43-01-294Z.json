@@ -1,0 +1,46 @@
+[
+  {
+    "_id": "68e64f707cb36c9ccd0ad735",
+    "kindeUserId": "kp_7de0b8550ca64d79a101b107cf976ac4",
+    "name": "Jayden Oerson Person",
+    "email": "sales@design-theory.co.za",
+    "role": "owner",
+    "plan": "enterprise",
+    "payfastSubscriptionStatus": "inactive",
+    "payfastSubscriptionCancelAtPeriodEnd": false,
+    "createdAt": "2025-10-08T11:48:00.926Z",
+    "__v": 0,
+    "phone": "060 383 2642",
+    "businessId": "68e66883d6377647201f3ecb",
+    "payfastCustomerId": null,
+    "payfastSubscriptionCancelAt": null,
+    "payfastSubscriptionCanceledAt": null,
+    "payfastSubscriptionCurrentPeriodEnd": null,
+    "payfastSubscriptionCurrentPeriodStart": null,
+    "payfastSubscriptionEndedAt": null,
+    "payfastSubscriptionId": null
+  },
+  {
+    "_id": "68ed6a809301bdfcc519d680",
+    "kindeUserId": "kp_d3b2f774bb2448ae86da25ca5f94dd1e",
+    "name": "Jayden Design",
+    "email": "jayden@design-theory.co.za",
+    "role": "staff",
+    "plan": "free",
+    "payfastSubscriptionStatus": "inactive",
+    "payfastSubscriptionCancelAtPeriodEnd": false,
+    "createdAt": "2025-10-13T21:09:20.540Z",
+    "__v": 0,
+    "businessId": "68e66883d6377647201f3ecb",
+    "isActive": true,
+    "permissions": {
+      "canManageServices": true,
+      "canManageBookings": true,
+      "canManageCustomers": true,
+      "canViewReports": true,
+      "canManageStaff": false,
+      "canManageBusiness": false
+    },
+    "theme": "system"
+  }
+]

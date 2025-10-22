@@ -10,7 +10,7 @@ export default function UsersTester() {
   const [editId, setEditId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    kindeUserId: '',
+    clerkUserId: '',
     name: '',
     email: '',
     role: 'staff' as 'owner' | 'staff',
@@ -101,7 +101,7 @@ export default function UsersTester() {
   function startEdit(user: User) {
     setEditId(user._id);
     setFormData({
-      kindeUserId: user.kindeUserId,
+      clerkUserId: user.clerkUserId,
       name: user.name,
       email: user.email,
       role: user.role,
@@ -117,7 +117,7 @@ export default function UsersTester() {
 
   function resetForm() {
     setFormData({
-      kindeUserId: '',
+      clerkUserId: '',
       name: '',
       email: '',
       role: 'staff',
@@ -160,8 +160,8 @@ export default function UsersTester() {
             </label>
             <input
               type="text"
-              value={formData.kindeUserId}
-              onChange={(e) => setFormData({ ...formData, kindeUserId: e.target.value })}
+              value={formData.clerkUserId}
+              onChange={(e) => setFormData({ ...formData, clerkUserId: e.target.value })}
               className="form-input"
               placeholder="kinde_user_123"
             />
@@ -232,7 +232,7 @@ export default function UsersTester() {
           {!isEditing ? (
             <button
               onClick={createUser}
-              disabled={loading || !formData.kindeUserId || !formData.name || !formData.email}
+              disabled={loading || !formData.clerkUserId || !formData.name || !formData.email}
               className="btn btn-success"
             >
               <svg className="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +244,7 @@ export default function UsersTester() {
             <>
               <button
                 onClick={() => editId && updateUser(editId)}
-                disabled={loading || !formData.kindeUserId || !formData.name || !formData.email}
+                disabled={loading || !formData.clerkUserId || !formData.name || !formData.email}
                 className="btn btn-primary"
               >
                 <svg className="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -326,7 +326,7 @@ export default function UsersTester() {
                       <div>
                         <div className="table-user-details">{user.name}</div>
                         <div className="table-user-meta">{user.email}</div>
-                        <div className="table-user-id">{user.kindeUserId}</div>
+                        <div className="table-user-id">{user.clerkUserId}</div>
                       </div>
                     </div>
                   </td>

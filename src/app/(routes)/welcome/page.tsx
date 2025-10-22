@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useKindeAuth } from '@kinde-oss/kinde-auth-nextjs';
+import { useUser } from '@clerk/nextjs';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSnackbar } from '@/hooks/useSnackbar';
 
 export default function WelcomePage() {
-  const { user, isAuthenticated, isLoading } = useKindeAuth();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,9 +17,9 @@ export default function WelcomePage() {
 
   useEffect(() => {
     const handleUserSetup = async () => {
-      if (isLoading) return;
+      if (!isLoaded) return;
       
-      if (!isAuthenticated || !user) {
+      if (!user) {
         router.push('/');
         return;
       }
@@ -39,9 +39,9 @@ export default function WelcomePage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            kindeUserId: user.id,
-            name: user.given_name + (user.family_name ? ` ${user.family_name}` : ''),
-            email: user.email,
+            clerkUserId: user.id,
+            name: user.fullName || user.firstName || user.emailAddresses[0]?.emailAddress || 'User',
+            email: user.emailAddresses[0]?.emailAddress || '',
           }),
         });
 
@@ -74,19 +74,19 @@ export default function WelcomePage() {
     };
 
     handleUserSetup();
-  }, [isAuthenticated, user, isLoading, router, showLoading, showSuccess, showError, dismiss]);
+  }, [isLoaded, user, router, showLoading, showSuccess, showError, dismiss]);
 
-  if (isLoading || isProcessing) {
+  if (!isLoaded || isProcessing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
             <CardTitle>
-              {isLoading ? 'Loading...' : 'Setting up your account...'}
+              {!isLoaded ? 'Loading...' : 'Setting up your account...'}
             </CardTitle>
             <CardDescription>
-              {isLoading ? 'Please wait while we verify your authentication.' : 'Creating your account and preparing your dashboard.'}
+              {!isLoaded ? 'Please wait while we verify your authentication.' : 'Creating your account and preparing your dashboard.'}
             </CardDescription>
           </CardHeader>
         </Card>

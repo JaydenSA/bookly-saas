@@ -1,10 +1,16 @@
 // User-related types and interfaces
 
-import { StaffPermissions } from './staff';
+export interface StaffPermissions {
+  canManageServices: boolean;
+  canManageBookings: boolean;
+  canManageCustomers: boolean;
+  canViewReports: boolean;
+  canManageBusiness: boolean;
+}
 
 export interface User {
   _id: string;
-  kindeUserId: string;
+  clerkUserId: string;
   name: string;
   email: string;
   role: 'owner' | 'staff';
@@ -18,7 +24,7 @@ export interface User {
 
 export interface UserData {
   id: string;
-  kindeUserId: string;
+  clerkUserId: string;
   name: string;
   email: string;
   role: 'owner' | 'staff';

@@ -2,30 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import UserSettings from '@/models/UserSettings';
 import User from '@/models/User';
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const { user: dbUser, error } = await getAuthenticatedUser(request);
     
-    if (!user) {
+    if (error || !dbUser) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
 
     await connectDB();
-    
-    // Find user by kindeUserId
-    const dbUser = await User.findOne({ kindeUserId: user.id });
-    if (!dbUser) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
 
     // Get or create user settings
     let userSettings = await UserSettings.findOne({ userId: dbUser._id });
@@ -59,12 +49,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const { user: dbUser, error } = await getAuthenticatedUser(request);
     
-    if (!user) {
+    if (error || !dbUser) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
@@ -73,15 +62,6 @@ export async function POST(request: NextRequest) {
     
     const body = await request.json();
     const { notifications, appearance } = body;
-
-    // Find user by kindeUserId
-    const dbUser = await User.findOne({ kindeUserId: user.id });
-    if (!dbUser) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
 
     // Update or create user settings
     const userSettings = await UserSettings.findOneAndUpdate(

@@ -9,6 +9,19 @@ const ServiceSchema = new Schema({
   duration: { type: Number, required: true, min: 0 },
   isActive: { type: Boolean, default: true },
   depositRequired: { type: Boolean, default: false },
+  // Staff assignments - which staff members can perform this service
+  staffIds: [{ type: Schema.Types.ObjectId, ref: 'Staff' }],
 }, { timestamps: true });
 
-export default mongoose.models.Service || mongoose.model('Service', ServiceSchema);
+let ServiceModel = mongoose.models.Service as mongoose.Model<any> | undefined;
+
+if (ServiceModel) {
+  // In dev with HMR, the model may be cached without the new field. Ensure it's present.
+  if (!ServiceModel.schema.path('staffIds')) {
+    ServiceModel.schema.add({ staffIds: [{ type: Schema.Types.ObjectId, ref: 'Staff' }] });
+  }
+} else {
+  ServiceModel = mongoose.model('Service', ServiceSchema);
+}
+
+export default ServiceModel;

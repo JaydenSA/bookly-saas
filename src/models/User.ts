@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 
 const UserSchema = new Schema({
-  kindeUserId: { type: String, required: true, index: true },
+  clerkUserId: { type: String, required: true, index: true },
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, index: true },
   role: { type: String, enum: ['owner', 'staff'], required: true },

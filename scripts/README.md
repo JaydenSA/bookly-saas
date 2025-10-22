@@ -1,6 +1,28 @@
-# Database Population Scripts
+# Database Scripts
 
-This directory contains scripts to populate your MongoDB database with sample data for testing the admin panel and API endpoints.
+This directory contains scripts for managing your MongoDB database.
+
+## 🔄 Migration Scripts (Kinde → Clerk)
+
+### Quick Migration (3 steps)
+```bash
+# 1. Backup your database
+npm run backup-db
+
+# 2. Run migration
+npm run migrate-to-clerk
+
+# 3. Test your app
+npm run dev
+```
+
+**📖 For detailed instructions, see [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)**
+
+---
+
+## 📊 Database Population Scripts
+
+Scripts to populate your MongoDB database with sample data for testing the admin panel and API endpoints.
 
 ## Available Scripts
 

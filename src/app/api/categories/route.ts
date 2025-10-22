@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Category from '@/models/Category';
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,12 +34,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const { user: dbUser, error } = await getAuthenticatedUser(request);
     
-    if (!user) {
+    if (error || !dbUser) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: error || 'Unauthorized' },
         { status: 401 }
       );
     }
