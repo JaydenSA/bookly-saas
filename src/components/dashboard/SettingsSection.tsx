@@ -272,7 +272,7 @@ export default function SettingsSection({ userData, onUserUpdate }: SettingsSect
   ];
 
   return (
-    <div className="settings-layout">
+    <div id="settings" className="settings-layout">
       {/* Settings Header */}
       <div className="settings-header">
         <div>
