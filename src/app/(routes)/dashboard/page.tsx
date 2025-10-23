@@ -9,12 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import BusinessSection from '@/components/dashboard/BusinessSection';
-import ServicesSection from '@/components/dashboard/ServicesSection';
-import CategoriesSection from '@/components/dashboard/CategoriesSection';
-import StaffSection from '@/components/dashboard/StaffSection';
-import BookingsSection from '@/components/dashboard/BookingsSection';
-import MyBookingsSection from '@/components/dashboard/MyBookingsSection';
+import LazyBusinessSection from '@/components/dashboard/LazyBusinessSection';
+import LazyServicesSection from '@/components/dashboard/LazyServicesSection';
+import LazyCategoriesSection from '@/components/dashboard/LazyCategoriesSection';
+import LazyStaffSection from '@/components/dashboard/LazyStaffSection';
+import LazyBookingsSection from '@/components/dashboard/LazyBookingsSection';
+import LazyMyBookingsSection from '@/components/dashboard/LazyMyBookingsSection';
 import SettingsSection from '@/components/dashboard/SettingsSection';
 import { useSnackbar } from '@/hooks/useSnackbar';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -28,6 +28,7 @@ export default function DashboardPage() {
     canManageCustomers,
     canViewReports,
     isLoadingPermissions,
+    hasTimedOut,
     userData: permissionsUserData
   } = usePermissions();
   const router = useRouter();
@@ -123,19 +124,41 @@ export default function DashboardPage() {
   if (!userData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Account Not Found
+        <div className="text-center max-w-md mx-auto px-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-6 text-blue-600" />
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            {hasTimedOut ? 'Still Loading...' : 'Loading Your Account'}
           </h2>
-          <p className="text-gray-600 mb-4">
-            We couldn&apos;t find your account. Please try signing up again.
+          <p className="text-gray-600 mb-6">
+            {hasTimedOut 
+              ? "This is taking longer than expected. We're still working on setting up your account."
+              : "We're setting up your account and preparing your dashboard. This may take a few moments."
+            }
           </p>
-          <button
-            onClick={() => router.push('/welcome')}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-          >
-            Go to Welcome Page
-          </button>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-blue-800">
+              <strong>If this is taking too long:</strong>
+            </p>
+            <ul className="text-sm text-blue-700 mt-2 space-y-1">
+              <li>• Try refreshing the page</li>
+              <li>• Check your internet connection</li>
+              <li>• Contact support if the issue persists</li>
+            </ul>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+            >
+              Refresh Page
+            </button>
+            <button
+              onClick={() => router.push('/welcome')}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+            >
+              Go to Welcome Page
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -293,32 +316,32 @@ export default function DashboardPage() {
 
         {/* Business Section - Only show for users who can manage business */}
         {!isLoadingPermissions && canManageBusiness && (
-          <BusinessSection userId={userData.id} />
+          <LazyBusinessSection userId={userData.id} />
         )}
 
         {/* Categories Section - Only show if user can manage services */}
         {!isLoadingPermissions && userData.businessId && canManageServices && (
-          <CategoriesSection businessId={userData.businessId} />
+          <LazyCategoriesSection businessId={userData.businessId} />
         )}
 
         {/* Services Section - Only show if user has a business and can manage services */}
         {!isLoadingPermissions && userData.businessId && canManageServices && (
-          <ServicesSection businessId={userData.businessId} />
+          <LazyServicesSection businessId={userData.businessId} />
         )}
 
         {/* Staff Section - Only show if user has a business and can manage services */}
         {!isLoadingPermissions && userData.businessId && canManageServices && (
-          <StaffSection businessId={userData.businessId} />
+          <LazyStaffSection businessId={userData.businessId} />
         )}
 
         {/* Bookings Section - Show for users who can manage bookings */}
         {!isLoadingPermissions && userData.businessId && canManageBookings && (
-          <BookingsSection businessId={userData.businessId} />
+          <LazyBookingsSection businessId={userData.businessId} />
         )}
 
         {/* My Bookings Section - Show for all users to see their own bookings */}
         {!isLoadingPermissions && userData && (
-          <MyBookingsSection userId={userData.id} />
+          <LazyMyBookingsSection userId={userData.id} />
         )}
 
         {/* No Access Message - Show for staff members with no permissions */}

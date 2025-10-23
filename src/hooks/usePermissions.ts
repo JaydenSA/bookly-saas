@@ -6,6 +6,7 @@ export function usePermissions() {
   const { user: clerkUser, isLoaded } = useUser();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -15,12 +16,18 @@ export function usePermissions() {
         return;
       }
 
+      // Set up timeout
+      const timeoutId = setTimeout(() => {
+        setHasTimedOut(true);
+      }, 10000); // 10 second timeout
+
       try {
         const response = await fetch(`/api/users/me?clerkUserId=${clerkUser.id}`);
         
         if (response.ok) {
           const data = await response.json();
           setUserData(data.user);
+          clearTimeout(timeoutId);
         } else if (response.status === 404) {
           // User doesn't exist in database yet, create them
           const createResponse = await fetch('/api/users/check-or-create', {
@@ -38,6 +45,7 @@ export function usePermissions() {
           if (createResponse.ok) {
             const createData = await createResponse.json();
             setUserData(createData.user);
+            clearTimeout(timeoutId);
           }
         }
       } catch (error) {
@@ -80,6 +88,7 @@ export function usePermissions() {
   return {
     userData,
     isLoadingPermissions: isLoading,
+    hasTimedOut,
     isOwner: userData?.role === 'owner',
     isStaff: userData?.role === 'staff',
     hasPermission,

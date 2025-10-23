@@ -252,3 +252,4 @@ Location: `src/app/api/bookings/availability/route.ts`
 - Cancellation available to booking owner and business manager
 
 
+
